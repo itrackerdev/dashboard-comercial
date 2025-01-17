@@ -79,11 +79,10 @@ def load_and_process_data():
         if excel_content is None:
             return pd.DataFrame()
         
-        # Lendo o arquivo Excel com encoding específico
+        # Lendo o arquivo Excel
         df = pd.read_excel(
             excel_content,
-            engine='openpyxl',
-            encoding_override='latin1'
+            engine='openpyxl'
         )
         
         # Convertendo datas
