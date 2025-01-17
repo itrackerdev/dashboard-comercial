@@ -3,7 +3,6 @@ import pandas as pd
 from datetime import datetime, timedelta
 import os
 import hashlib
-from google.oauth2 import service_account
 import requests
 from io import BytesIO
 
