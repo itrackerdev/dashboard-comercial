@@ -79,8 +79,12 @@ def load_and_process_data():
         if excel_content is None:
             return pd.DataFrame()
         
-        # Lendo o arquivo Excel
-        df = pd.read_excel(excel_content)
+        # Lendo o arquivo Excel com encoding específico
+        df = pd.read_excel(
+            excel_content,
+            engine='openpyxl',
+            encoding_override='latin1'
+        )
         
         # Convertendo datas
         df['DATA CONSULTA'] = pd.to_datetime(df['DATA CONSULTA'], format='%d/%m/%Y', dayfirst=True)
