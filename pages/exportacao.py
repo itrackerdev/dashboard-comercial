@@ -43,7 +43,6 @@ def remove_duplicates(df):
             keep='last'
         )
     else:
-        # Caso não exista arquivo consolidado, usar os dados carregados
         df_all = df
     
     # Salvando o arquivo consolidado atualizado
@@ -58,12 +57,10 @@ def remove_duplicates(df):
 
 def download_file_from_drive(file_id):
     """Download arquivo do Google Drive"""
-    # URL para download direto do Google Drive
     url = f"https://drive.google.com/uc?id={file_id}"
-    
     try:
         response = requests.get(url)
-        response.raise_for_status()  # Levanta exceção para status codes de erro
+        response.raise_for_status()
         return BytesIO(response.content)
     except Exception as e:
         st.error(f"Erro ao baixar arquivo do Google Drive: {str(e)}")
@@ -80,10 +77,7 @@ def load_and_process_data():
             return pd.DataFrame()
         
         # Lendo o arquivo Excel
-        df = pd.read_excel(
-            excel_content,
-            engine='openpyxl'
-        )
+        df = pd.read_excel(excel_content)
         
         # Convertendo datas
         df['DATA CONSULTA'] = pd.to_datetime(df['DATA CONSULTA'], format='%d/%m/%Y', dayfirst=True)
@@ -101,15 +95,6 @@ def load_and_process_data():
     except Exception as e:
         st.error(f"Erro ao carregar os dados: {str(e)}")
         return pd.DataFrame()
-
-def show_update_info():
-    """Exibe informações sobre as atualizações dos dados"""
-    if os.path.exists('log_atualizacao_exportacao.txt'):
-        with open('log_atualizacao_exportacao.txt', 'r') as f:
-            last_updates = f.readlines()[-5:]  # Mostra as últimas 5 atualizações
-        st.sidebar.markdown("### Últimas Atualizações")
-        for update in last_updates:
-            st.text(update.strip())
 
 def get_detailed_info(df, data, uf):
     """Retorna informações detalhadas para uma data e UF específicas"""
@@ -143,6 +128,15 @@ def format_detailed_table(df_filtered):
     df_detalhes['Containers'] = df_detalhes['Containers'].apply(lambda x: f"{int(x):,}" if x > 0 else "-")
     
     return df_detalhes
+
+def show_update_info():
+    """Exibe informações sobre as atualizações dos dados"""
+    if os.path.exists('log_atualizacao_exportacao.txt'):
+        with open('log_atualizacao_exportacao.txt', 'r') as f:
+            last_updates = f.readlines()[-5:]  # Mostra as últimas 5 atualizações
+        st.sidebar.markdown("### Últimas Atualizações")
+        for update in last_updates:
+            st.text(update.strip())
 
 def main():
     st.title("📦 Previsão de Exportações por Estado")
