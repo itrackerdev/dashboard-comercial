@@ -1,4 +1,0 @@
-2025-01-17 14:35:20.022730 - Registros processados: 14987, Registros únicos após processamento: 14987
-2025-01-17 14:35:56.925630 - Registros processados: 14987, Registros únicos após processamento: 8500
-2025-01-17 14:36:27.827245 - Registros processados: 14987, Registros únicos após processamento: 8500
-2025-01-17 14:37:13.064706 - Registros processados: 14987, Registros únicos após processamento: 8500
