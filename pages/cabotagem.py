@@ -404,16 +404,35 @@ def main():
         total_registros = len(df)
         st.write(f"Total de registros únicos: {total_registros:,}")
         
-        # Previsão por Estado
-        st.subheader("Previsão de Cabotagem por Estado")
-        st.write("Selecione uma data e estado para ver os detalhes")
+        # Seleção de Data
+        datas_disponiveis = get_formatted_dates(df)
+        if not datas_disponiveis:
+            st.error("Não há datas disponíveis para seleção")
+            return
+            
+        data_selecionada = st.selectbox("Selecione a Data", datas_disponiveis, key='data_estado')
         
-        # Toggle para tipo de visualização
+        # Seleção de Local (Estado ou Cidade)
         view_type = st.radio(
             "Selecione o tipo de visualização:",
             ['Estado Destinatário', 'Cidade Remetente'],
             index=0  # Estado Destinatário como padrão
         )
+        
+        if view_type == 'Estado Destinatário':
+            locais = sorted([
+                e for e in df['DESTINATÁRIO - ESTADO'].unique()
+                if e is not None and str(e).strip()
+            ])
+            local_label = "Selecione o Estado"
+        else:
+            locais = sorted([
+                e for e in df['ESTADO_ORIGEM'].unique()
+                if e is not None and str(e).strip()
+            ])
+            local_label = "Selecione o Estado"
+        
+        local_selecionado = st.selectbox(local_label, locais, key='local_select')
         
         # Criar tabela baseada na seleção
         table_type = 'destinatario' if view_type == 'Estado Destinatário' else 'remetente'
@@ -422,68 +441,45 @@ def main():
         if not summary_df.empty:
             st.dataframe(summary_df, use_container_width=True)
             
-            # Seleção de Data
-            datas_disponiveis = get_formatted_dates(df)
-            if not datas_disponiveis:
-                st.error("Não há datas disponíveis para seleção")
-                return
-                
-            data_selecionada = st.selectbox("Selecione a Data", datas_disponiveis, key='data_estado')
-            
-            # Seleção de Local (Estado ou Cidade)
-            if table_type == 'destinatario':
-                locais = sorted([
-                    e for e in df['DESTINATÁRIO - ESTADO'].unique()
-                    if e is not None and str(e).strip()
-                ])
-                local_label = "Selecione o Estado"
+        # Exibindo detalhes
+        if data_selecionada and local_selecionado:
+            if view_type == 'Estado Destinatário':
+                mask = (
+                    (df['DATA DE EMBARQUE'].dt.strftime('%d/%m/%Y') == data_selecionada) & 
+                    (df['DESTINATÁRIO - ESTADO'] == local_selecionado)
+                )
             else:
-                locais = sorted([
-                    c for c in df['REMETENTE - CIDADE'].unique()
-                    if c is not None and str(c).strip()
-                ])
-                local_label = "Selecione a Cidade"
+                mask = (
+                    (df['DATA DE EMBARQUE'].dt.strftime('%d/%m/%Y') == data_selecionada) & 
+                    (df['REMETENTE - CIDADE'] == local_selecionado)
+                )
             
-            local_selecionado = st.selectbox(local_label, locais, key='local_select')
+            df_filtered = df[mask].copy();
             
-            if data_selecionada and local_selecionado:
-                # Filtrar dados baseado na seleção
-                if table_type == 'destinatario':
-                    mask = (
-                        (df['DATA DE EMBARQUE'].dt.strftime('%d/%m/%Y') == data_selecionada) & 
-                        (df['DESTINATÁRIO - ESTADO'] == local_selecionado)
-                    )
-                else:
-                    mask = (
-                        (df['DATA DE EMBARQUE'].dt.strftime('%d/%m/%Y') == data_selecionada) & 
-                        (df['REMETENTE - CIDADE'] == local_selecionado)
-                    )
+            # Exibindo métricas
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                total_containers = int(df_filtered['QUANTIDADE TEUS'].sum())
+                st.metric("Total de Contêineres", total_containers)
                 
-                df_filtered = df[mask].copy()
+            with col2:
+                total_empresas = len(df_filtered['ARMADOR'].unique())
+                st.metric("Número de Empresas", total_empresas)
                 
-                # Exibindo métricas
-                col1, col2, col3 = st.columns(3)
-                
-                with col1:
-                    total_containers = int(df_filtered['QUANTIDADE TEUS'].sum())
-                    st.metric("Total de Contêineres", total_containers)
-                    
-                with col2:
-                    total_empresas = len(df_filtered['ARMADOR'].unique())
-                    st.metric("Número de Empresas", total_empresas)
-                    
-                with col3:
-                    total_navios = len(df_filtered['NAVIO'].unique())
-                    st.metric("Total de Navios", total_navios)
-                
-                # Exibindo detalhes
-                if table_type == 'destinatario':
-                    st.subheader(f"Detalhes para Estado: {local_selecionado} - {data_selecionada}")
-                else:
-                    st.subheader(f"Detalhes para Cidade: {local_selecionado} - {data_selecionada}")
-                
-                format_estado_table(df_filtered)
-                
+            with col3:
+                total_navios = len(df_filtered['NAVIO'].unique())
+                st.metric("Total de Navios", total_navios)
+            
+        # Exibindo detalhes
+        if data_selecionada and local_selecionado:
+            if view_type == 'Estado Destinatário':
+                st.subheader(f"Detalhes para Estado: {local_selecionado} - {data_selecionada}")
+            else:
+                st.subheader(f"Detalhes para Cidade: {local_selecionado} - {data_selecionada}")
+            
+            format_estado_table(df_filtered)
+        
     except Exception as e:
         st.error(f"Erro ao processar dados: {str(e)}")
         st.exception(e)
