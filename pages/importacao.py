@@ -13,359 +13,507 @@ st.set_page_config(
     menu_items=None
 )
 
-# Estilização global
-st.markdown("""
+# Estilização CSS aprimorada
+st.markdown(
+    """
     <style>
+    /* Estilos gerais */
     .stApp {
         background-color: #ffffff;
     }
-    .main .block-container {
-        padding-top: 2rem;
-        padding-bottom: 2rem;
+    
+    /* Título principal */
+    h1 {
+        color: #0365B0 !important;
+        font-weight: 800;
+        font-size: 2.5rem;
+        margin: 2rem auto;
+        text-align: center;
+        padding: 1.5rem;
+        border-bottom: 4px solid #F37529;
+        max-width: 90%;
+        background: linear-gradient(120deg, rgba(3,101,176,0.1) 0%, rgba(255,255,255,1) 50%, rgba(243,117,41,0.1) 100%);
+        border-radius: 15px 15px 0 0;
     }
-    .metric-card {
+    
+    /* Subtítulos e cabeçalhos de seção */
+    h2, h3, .subheader {
+        color: #0365B0 !important;
+        font-weight: 600;
+        padding: 0.75rem 1rem;
+        margin: 1.5rem 0;
         background-color: #f8f9fa;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+        border-left: 6px solid #F37529;
+        border-radius: 0 8px 8px 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    /* Cards de métricas */
+    div[data-testid="stMetric"] {
+        background: linear-gradient(135deg, #0365B0, #0357A6);
+        padding: 1.25rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(3, 101, 176, 0.15);
+        transition: all 0.3s ease;
         margin: 0.5rem 0;
     }
-    .dataframe {
-        font-size: 0.9rem !important;
+
+    div[data-testid="stMetric"]:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(3, 101, 176, 0.2);
     }
-    .st-emotion-cache-16txtl3 h4 {
-        padding-top: 0;
+
+    div[data-testid="stMetric"] > div {
+        color: white !important; /* Deixa os números brancos */
+        font-size: 2rem !important;
+        font-weight: 700;
+    }
+
+    div[data-testid="stMetric"] label {
+        color: white !important; /* Deixa os textos brancos */
+        font-weight: 600;
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    /* DataFrames aprimorados */
+    .stDataFrame {
+        border: none !important;
+        border-radius: 12px !important;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+        margin: 1rem 0;
+        background: white;
+    }
+    
+    /* Esconder índices das tabelas */
+    .stDataFrame [data-testid="stDataFrameIndexHeader"] {
+        display: none !important;
+    }
+    
+    .stDataFrame th:first-child {
+        display: none !important;
+    }
+    
+    .stDataFrame td:first-child {
+        display: none !important;
+    }
+    
+    .stDataFrame th {
+        background-color: #0365B0 !important;
+        color: white !important;
+        font-weight: 600;
+        text-align: center !important;
+        padding: 1rem 0.75rem !important;
+        font-size: 0.9rem !important;
+        border-top: 3px solid #F37529 !important;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .stDataFrame td {
+        text-align: center !important;
+        font-size: 0.9rem !important;
+        padding: 0.75rem 0.5rem !important;
+        border-bottom: 1px solid rgba(3, 101, 176, 0.1);
+        transition: background-color 0.2s ease;
+        background-color: white !important;
+    }
+    
+    .stDataFrame tr:nth-child(even) td {
+        background-color: rgba(3, 101, 176, 0.02) !important;
+    }
+    
+    .stDataFrame tr:hover td {
+        background-color: rgba(243, 117, 41, 0.05) !important;
+    }
+    
+    /* Seletores estilizados */
+    .stSelectbox, .stDateInput {
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        padding: 0.5rem;
+        margin: 0.5rem 0;
+    }
+    
+    .stSelectbox label, .stDateInput label {
+        color: #0365B0 !important;
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stSelectbox > div > div {
+        background-color: white;
+        border: 1px solid rgba(3, 101, 176, 0.2);
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+    
+    .stSelectbox > div > div:hover {
+        border-color: #F37529;
+    }
+    
+    /* Mensagens de alerta estilizadas */
+    .stAlert {
+        border-radius: 10px;
+        border-left: 4px solid #F37529;
+        background-color: rgba(243, 117, 41, 0.05);
+        padding: 1rem;
+        margin: 1rem 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    /* Divisores de seção aprimorados */
+    hr {
+        border: none;
+        height: 3px;
+        background: linear-gradient(to right, #0365B0, #F37529);
+        margin: 2rem 0;
+        opacity: 0.7;
+        border-radius: 3px;
+    }
+
+    /* Container principal */
+    .main {
+        padding: 1rem 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+        h1 {
+            font-size: 2rem;
+            padding: 1rem;
+        }
+        
+        .stDataFrame th {
+            font-size: 0.85rem !important;
+            padding: 0.75rem 0.5rem !important;
+        }
+        
+        .stDataFrame td {
+            font-size: 0.8rem !important;
+            padding: 0.5rem !important;
+        }
+        
+        div[data-testid="stMetric"] > div {
+            font-size: 1.5rem !important;
+        }
     }
     </style>
-""", unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True
+)
 
+# Função para baixar arquivo
+@st.cache_data
 def download_file_from_drive(file_id):
-    """Download arquivo do Google Drive"""
+    """Baixa arquivo do Google Drive."""
     url = f"https://drive.google.com/uc?id={file_id}"
     try:
         response = requests.get(url)
         response.raise_for_status()
         return BytesIO(response.content)
     except Exception as e:
-        st.error(f"❌ Erro ao baixar arquivo do Google Drive: {str(e)}")
+        st.error(f"Erro ao baixar arquivo: {str(e)}")
         return None
 
+# Função para carregar e processar dados
+@st.cache_data
 def load_and_process_data():
+    """Carrega e processa os dados do Excel."""
     try:
         file_id = st.secrets["urls"]["planilha_importacao"]
         excel_content = download_file_from_drive(file_id)
-        
-        if excel_content is None:
+
+        if not excel_content:
             return pd.DataFrame()
-        
+
         df = pd.read_excel(excel_content)
+        if not {'ETA', 'QTDE CONTAINER', 'UF CONSIGNATÁRIO'}.issubset(df.columns):
+            st.error("O arquivo não contém as colunas necessárias.")
+            return pd.DataFrame()
+
         df['ETA'] = pd.to_datetime(df['ETA'], format='%d/%m/%Y')
-        df['QTDE CONTAINER'] = df['QTDE CONTAINER'].str.replace(',', '.').astype(float)
-        
+        df['QTDE CONTAINER'] = pd.to_numeric(
+            df['QTDE CONTAINER'].str.replace(',', '.'), errors='coerce')
+
         return df
-        
     except Exception as e:
-        st.error(f"❌ Erro ao carregar os dados: {str(e)}")
+        st.error(f"Erro ao carregar dados: {str(e)}")
         return pd.DataFrame()
 
-def create_pagination_controls(total_pages, current_page, on_change):
-    """Cria controles de paginação personalizados"""
-    cols = st.columns([1, 2, 3, 2, 1])
-    
-    with cols[0]:
-        if st.button("⏮️", disabled=current_page == 1):
-            on_change(1)
-    
-    with cols[1]:
-        if st.button("◀️ Anterior", disabled=current_page == 1):
-            on_change(current_page - 1)
-    
-    with cols[2]:
-        st.markdown(f"<div style='text-align: center;'>Página {current_page} de {total_pages}</div>", unsafe_allow_html=True)
-    
-    with cols[3]:
-        if st.button("Próxima ▶️", disabled=current_page == total_pages):
-            on_change(current_page + 1)
-    
-    with cols[4]:
-        if st.button("⏭️", disabled=current_page == total_pages):
-            on_change(total_pages)
+# Função para exibir métricas
+def display_metric_card(title, value, delta=None, help_text=None):
+    """Exibe um cartão de métrica estilizado."""
+    st.metric(label=title, value=value, delta=delta, help=help_text)
 
-def create_metric_card(title, value, delta=None, help_text=None):
-    """Cria card personalizado para métricas"""
-    help_div = f"<div style='font-size: 0.8rem; color: #6c757d;'>{help_text}</div>" if help_text else ""
-    delta_div = (
-        f"<div style='color: {'#28a745' if float(str(delta).rstrip('%')) > 0 else '#dc3545'};'>{delta}</div>"
-        if delta else ""
-    )
-    
-    card_html = f"""
-        <div class="metric-card">
-            <h4 style="color: #6c757d; margin: 0;">{title}</h4>
-            <div style="font-size: 2rem; font-weight: bold; color: #212529; margin: 0.5rem 0;">
-                {value}
-            </div>
-            {delta_div}
-            {help_div}
-        </div>
-    """
-    
-    st.markdown(card_html, unsafe_allow_html=True)
-
+# Função para formatar DataFrame
 def style_dataframe(df):
-    """
-    Aplica estilos personalizados ao DataFrame e
-    esconde o índice via CSS (para versões de pandas < 1.4).
-    """
-    return (
-        df.style
-        .set_table_styles([
-            # Esconde o índice (row_heading) e células em branco (blank)
-            {
-                'selector': 'th.row_heading, th.blank',
-                'props': [('display', 'none')]
-            },
-            # Estilização do cabeçalho das colunas
-            {
-                'selector': 'th',
-                'props': [
-                    ('background-color', '#e9ecef'),
-                    ('color', '#495057'),
-                    ('font-weight', 'bold'),
-                    ('padding', '0.5rem'),
-                    ('text-align', 'center')
-                ]
-            }
+    """Aplica estilos ao DataFrame."""
+    # Cria uma cópia do DataFrame para não modificar o original
+    styled_df = df.copy()
+    
+    # Define os estilos básicos da tabela
+    styles = [
+        dict(selector="th", props=[
+            ("background-color", "#0365B0"),
+            ("color", "white"),
+            ("font-weight", "bold"),
+            ("text-align", "center"),
+            ("padding", "1rem"),
+            ("border-top", "3px solid #F37529"),
+            ("text-transform", "uppercase"),
+            ("letter-spacing", "0.5px")
+        ]),
+        dict(selector="td", props=[
+            ("text-align", "center"),
+            ("padding", "0.75rem"),
+            ("border-bottom", "1px solid rgba(3, 101, 176, 0.1)")
         ])
-        .set_properties(**{
-            'background-color': '#f8f9fa',
-            'color': '#212529',
-            'border': '1px solid #dee2e6',
-            'padding': '0.5rem'
-        })
-    )
-
-def get_detailed_info(df, data, uf):
-    """Retorna informações detalhadas para uma data e UF específicas"""
-    if isinstance(data, str):
-        data = pd.to_datetime(data)
-    
-    df_date = df['ETA'].dt.normalize()
-    compare_date = pd.to_datetime(data).normalize()
-    
-    mask = (df_date == compare_date) & (df['UF CONSIGNATÁRIO'] == uf)
-    return df[mask]
-
-def format_detailed_table(df_filtered):
-    """Formata a tabela de detalhes com as informações relevantes"""
-    if df_filtered.empty:
-        return pd.DataFrame()
-    
-    colunas_exibir = {
-        'TERMINAL DESCARGA': 'Terminal',
-        'CONSIGNATÁRIO': 'Empresa',
-        'EMAIL': 'Email',
-        'TELEFONE': 'Telefone',
-        'NAVIO': 'Navio',
-        'ARMADOR': 'Armador',
-        'AGENTE DE CARGA': 'Agente de Carga',
-        'CONSOLIDADOR': 'Consolidador',
-        'QTDE CONTAINER': 'Containers',
-        'TIPO CONTAINER': 'Tipo',
-        'MERCADORIA': 'Mercadoria'
-    }
-    
-    df_detalhes = df_filtered[colunas_exibir.keys()].copy()
-    df_detalhes.columns = colunas_exibir.values()
-    df_detalhes['Containers'] = df_detalhes['Containers'].apply(lambda x: f"{int(x):,}" if x > 0 else "-")
-    
-    return df_detalhes
-
-def format_story_table(df, data, uf):
-    """Cria tabela para trajetória dos containers"""
-    filtered_df = df[
-        (df['ETA'].dt.strftime('%d/%m/%Y') == data.strftime('%d/%m/%Y')) &
-        (df['UF CONSIGNATÁRIO'] == uf)
     ]
     
-    story_df = filtered_df[[
+    return (styled_df.style
+            .set_table_styles(styles)
+            .hide(axis='index')  # Tentando um método alternativo para esconder o índice
+            .background_gradient(axis=None, subset=None, text_color_threshold=0.408,
+                              cmap=lambda x: 'rgba(3, 101, 176, 0.03)' if x % 2 == 0 else 'white'))
+
+# Função para criar tabelas detalhadas
+def create_detailed_tables(df, data_selecionada, uf_selecionada):
+    """Cria tabelas detalhadas para a seleção especificada."""
+    df['ETA'] = pd.to_datetime(df['ETA']).dt.normalize()
+    data_selecionada = pd.to_datetime(data_selecionada).normalize()
+
+    detalhes = df[(df['ETA'] == data_selecionada) & (df['UF CONSIGNATÁRIO'] == uf_selecionada)]
+
+    if detalhes.empty:
+        st.info("Sem dados para o filtro selecionado.")
+        return
+
+    # Função auxiliar para estilizar tabelas
+    def style_table(df, hide_index=True):
+        styles = [
+            {'selector': 'th',
+             'props': [
+                ('background-color', '#0365B0'),
+                ('color', 'white'),
+                ('font-weight', 'bold'),
+                ('text-align', 'center'),
+                ('padding', '1rem'),
+                ('border-top', '3px solid #F37529'),
+                ('text-transform', 'uppercase'),
+                ('letter-spacing', '0.5px')
+            ]},
+            {'selector': 'td',
+             'props': [
+                ('text-align', 'center'),
+                ('padding', '0.75rem'),
+                ('border-bottom', '1px solid rgba(3, 101, 176, 0.1)')
+            ]},
+            {'selector': '.index_name, .blank, .col_heading.level0, .index_name.level0',
+             'props': [
+                ('display', 'none')
+            ]}
+        ]
+        
+        styled = df.style.set_table_styles(styles)
+        if hide_index:
+            styled = styled.hide(axis='index')
+        return styled
+
+    # Tabela de trajetória dos containers
+    st.subheader(f"Trajetória dos Containers - {uf_selecionada} ({data_selecionada.strftime('%d/%m/%Y')})")
+
+    story_table = detalhes[[
         'PAÍS ORIGEM', 'ETS', 'PORTO DESCARGA', 'ETA',
         'UF CONSIGNATÁRIO', 'QTDE CONTAINER'
     ]].copy()
-    
-    story_df.columns = [
+
+    story_table.columns = [
         'País de Origem', 'Data de Saída (ETS)',
         'Porto de Descarga', 'Data de Chegada (ETA)',
         'Estado Destino', 'Quantidade de Containers'
     ]
-    
-    # Converte datas para string no formato dd/mm/yyyy
-    story_df['Data de Saída (ETS)'] = pd.to_datetime(
-        story_df['Data de Saída (ETS)'],
-        errors='coerce',
-        dayfirst=True
+
+    # Formatação das colunas
+    story_table['Data de Saída (ETS)'] = pd.to_datetime(
+        story_table['Data de Saída (ETS)'], errors='coerce', dayfirst=True
     ).dt.strftime('%d/%m/%Y')
-    
-    story_df['Data de Chegada (ETA)'] = pd.to_datetime(
-        story_df['Data de Chegada (ETA)'],
-        errors='coerce',
-        dayfirst=True
+
+    story_table['Data de Chegada (ETA)'] = pd.to_datetime(
+        story_table['Data de Chegada (ETA)'], errors='coerce', dayfirst=True
     ).dt.strftime('%d/%m/%Y')
-    
-    # Formata a quantidade de containers, removendo decimais e adicionando separador de milhar
-    story_df['Quantidade de Containers'] = story_df['Quantidade de Containers'].apply(
+
+    story_table['Quantidade de Containers'] = story_table['Quantidade de Containers'].apply(
         lambda x: f"{int(x):,}" if x > 0 else "-"
     )
-    
-    # Remove linhas com colunas essenciais vazias
-    story_df = story_df.dropna(subset=['País de Origem', 'Porto de Descarga', 'Estado Destino'])
-    
-    # Ordena pela data de chegada
-    story_df = story_df.sort_values(by='Data de Chegada (ETA)').reset_index(drop=True)
-    
-    return story_df
 
+    # Limpar dados desnecessários
+    story_table = story_table.dropna(subset=['País de Origem', 'Porto de Descarga', 'Estado Destino'])
+    story_table = story_table.sort_values(by='Data de Chegada (ETA)')
+
+    # Resetar o índice para remover os índices originais
+    story_table_reset = story_table.reset_index(drop=True)
+
+    # Converter a tabela para HTML e remover completamente os índices
+    story_table_html = story_table_reset.to_html(index=False, justify='center')
+
+    # Exibir a tabela usando Markdown com CSS básico
+    st.markdown(f"""
+    <div style="overflow-x: auto; border: 1px solid #ddd; border-radius: 8px; padding: 10px; background: white;">
+        {story_table_html}
+    </div>
+    """, unsafe_allow_html=True)
+
+
+    # Tabela de detalhes dos containers
+    st.subheader("Detalhes dos Containers")
+    detalhes_tabela = detalhes[[
+        'TERMINAL DESCARGA', 'CONSIGNATÁRIO', 'EMAIL',
+        'TELEFONE', 'NAVIO', 'ARMADOR', 'QTDE CONTAINER'
+    ]].copy()
+
+    detalhes_tabela.columns = [
+        'Terminal de Descarga', 'Consignatário', 'Email',
+        'Telefone', 'Navio', 'Armador', 'Quantidade de Containers'
+    ]
+
+    detalhes_tabela['Quantidade de Containers'] = detalhes_tabela['Quantidade de Containers'].apply(
+        lambda x: f"{int(x):,}" if x > 0 else "-"
+    )
+
+    # Resetar o índice e converter para HTML
+    detalhes_tabela_reset = detalhes_tabela.reset_index(drop=True)
+    detalhes_tabela_html = detalhes_tabela_reset.to_html(index=False, justify='center')
+
+    # Exibir tabela formatada
+    st.markdown(f"""
+    <div style="overflow-x: auto; border: 1px solid #ddd; border-radius: 8px; padding: 10px; background: white;">
+        {detalhes_tabela_html}
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("<hr>", unsafe_allow_html=True)
+
+    # Distribuição por terminal
+    st.subheader("Distribuição por Terminal")
+    dist_terminal = detalhes.groupby('TERMINAL DESCARGA')['QTDE CONTAINER'].sum().reset_index()
+    dist_terminal.columns = ['Terminal', 'Quantidade']
+
+    dist_terminal['Quantidade'] = dist_terminal['Quantidade'].apply(
+        lambda x: f"{int(x):,}" if x > 0 else "-"
+    )
+
+    # Resetar o índice e converter para HTML
+    dist_terminal_reset = dist_terminal.reset_index(drop=True)
+    dist_terminal_html = dist_terminal_reset.to_html(index=False, justify='center')
+
+    # Exibir tabela formatada
+    st.markdown(f"""
+    <div style="overflow-x: auto; border: 1px solid #ddd; border-radius: 8px; padding: 10px; background: white;">
+        {dist_terminal_html}
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("<hr>", unsafe_allow_html=True)
+
+    # Informações dos navios
+    st.subheader("Informações dos Navios")
+    info_navios = detalhes[['NAVIO', 'ARMADOR']].drop_duplicates()
+    info_navios.columns = ['Navio', 'Armador']
+
+    # Resetar o índice e converter para HTML
+    info_navios_reset = info_navios.reset_index(drop=True)
+    info_navios_html = info_navios_reset.to_html(index=False, justify='center')
+
+    # Exibir tabela formatada
+    st.markdown(f"""
+    <div style="overflow-x: auto; border: 1px solid #ddd; border-radius: 8px; padding: 10px; background: white;">
+        {info_navios_html}
+    </div>
+    """, unsafe_allow_html=True)
+
+
+# Função principal
 def main():
-    # Título principal centralizado e em negrito
-    st.markdown("<h1 style='text-align: center; font-weight: bold;'>📦 Previsão de Chegadas de Containers</h1>", unsafe_allow_html=True)
+    # Container principal com margem
+    st.markdown('<div class="main">', unsafe_allow_html=True)
     
-    try:
-        df = load_and_process_data()
-        if df.empty:
-            st.warning("⚠️ Não foi possível carregar os dados")
-            return
-        
-        # Criando tabela pivot inicial
-        dados_pivot = df.groupby(['ETA', 'UF CONSIGNATÁRIO'])['QTDE CONTAINER'].sum().reset_index()
-        tabela_pivot = dados_pivot.pivot(
-            index='ETA',
-            columns='UF CONSIGNATÁRIO',
-            values='QTDE CONTAINER'
-        ).fillna(0)
-        
-        # Adicionando total por dia
-        tabela_pivot['TOTAL'] = tabela_pivot.sum(axis=1)
-        
-        # Formatando a tabela principal
-        tabela_formatada = tabela_pivot.copy()
-        for coluna in tabela_formatada.columns:
-            tabela_formatada[coluna] = tabela_formatada[coluna].apply(
-                lambda x: f"{int(x):,}" if x > 0 else "-"
-            )
-        
-        tabela_formatada.index = tabela_formatada.index.strftime('%d/%m/%Y')
+    st.title("Previsão de Chegadas de Containers")
 
-        # Título centralizado e em negrito
-        st.markdown("<h3 style='text-align: center; font-weight: bold;'>📊 Previsão de Chegadas por Estado</h3>", unsafe_allow_html=True)
-        st.markdown("""
-            <div style='font-size: 0.9rem; color: #6c757d; margin-bottom: 1rem; text-align: center;'>
-                Clique em qualquer número para ver os detalhes
-            </div>
-        """, unsafe_allow_html=True)
-        
-        # Exibição da tabela principal usando a função de estilo
-        st.dataframe(
-            style_dataframe(tabela_formatada),
-            use_container_width=True,
-            height=400
+    # Carrega os dados
+    if "dataframe" not in st.session_state:
+        st.session_state["dataframe"] = load_and_process_data()
+    df = st.session_state["dataframe"]
+
+    if df.empty:
+        st.warning("Nenhum dado disponível para exibição.")
+        return
+
+    # Tabela principal
+    dados_pivot = df.groupby(['ETA', 'UF CONSIGNATÁRIO'])['QTDE CONTAINER'].sum().reset_index()
+    tabela_pivot = dados_pivot.pivot(
+        index='ETA',
+        columns='UF CONSIGNATÁRIO',
+        values='QTDE CONTAINER'
+    ).fillna(0)
+
+    tabela_pivot['TOTAL'] = tabela_pivot.sum(axis=1)
+
+    # Adiciona resumo de métricas
+    total_containers = int(tabela_pivot['TOTAL'].sum())
+    media_diaria = int(tabela_pivot['TOTAL'].mean())
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        display_metric_card(
+            "Total de Containers",
+            f"{total_containers:,}",
+            help_text="Total de containers em todas as datas"
+        )
+    with col2:
+        display_metric_card(
+            "Média Diária",
+            f"{media_diaria:,}",
+            help_text="Média diária de containers"
         )
 
-        # Seletores
-        col1, col2 = st.columns(2)
-        with col1:
-            data_selecionada = st.date_input(
-                "📅 Data",
-                value=pd.to_datetime(tabela_formatada.index[0], format='%d/%m/%Y'),
-                min_value=pd.to_datetime(tabela_formatada.index[0], format='%d/%m/%Y'),
-                max_value=pd.to_datetime(tabela_formatada.index[-1], format='%d/%m/%Y')
-            )
-        with col2:
-            uf_selecionada = st.selectbox(
-                "🗺️ Estado",
-                options=[col for col in tabela_pivot.columns if col != 'TOTAL']
-            )
+    st.markdown("<hr>", unsafe_allow_html=True)
+    
+    st.subheader("Previsão de Chegadas por Estado")
+    tabela_formatada = tabela_pivot.copy()
+    for coluna in tabela_formatada.columns:
+        tabela_formatada[coluna] = tabela_formatada[coluna].apply(lambda x: f"{int(x):,}" if x > 0 else "-")
 
-        if data_selecionada and uf_selecionada:
-            detalhes = get_detailed_info(df, data_selecionada, uf_selecionada)
-            
-            if not detalhes.empty:
-                # Título centralizado e em negrito
-                st.markdown(f"<h3 style='text-align: center; font-weight: bold;'>📈 Detalhes para {uf_selecionada} - {data_selecionada.strftime('%d/%m/%Y')}</h3>", unsafe_allow_html=True)
-                
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    st.metric(
-                        label="Total de Containers",
-                        value=f"{int(detalhes['QTDE CONTAINER'].sum()):,}"
-                    )
-                with col2:
-                    st.metric(
-                        label="Empresas",
-                        value=len(detalhes['CONSIGNATÁRIO'].unique())
-                    )
-                with col3:
-                    st.metric(
-                        label="Terminais",
-                        value=len(detalhes['TERMINAL DESCARGA'].unique())
-                    )
+    tabela_formatada.index = tabela_formatada.index.strftime('%d/%m/%Y')
+    st.dataframe(style_dataframe(tabela_formatada), use_container_width=True, height=400)
 
-                # Título centralizado e em negrito
-                st.markdown("<h3 style='text-align: center; font-weight: bold;'>🚢 Trajetória dos Containers</h3>", unsafe_allow_html=True)
-                story_table = format_story_table(df, data_selecionada, uf_selecionada)
-                
-                if not story_table.empty:
-                    rows_per_page = 10
-                    total_rows = len(story_table)
-                    total_pages = (total_rows + rows_per_page - 1) // rows_per_page
-                    
-                    if 'current_page' not in st.session_state:
-                        st.session_state.current_page = 1
-                    
-                    create_pagination_controls(
-                        total_pages,
-                        st.session_state.current_page,
-                        lambda x: setattr(st.session_state, 'current_page', x)
-                    )
-                    
-                    start_idx = (st.session_state.current_page - 1) * rows_per_page
-                    end_idx = start_idx + rows_per_page
+    st.markdown("<hr>", unsafe_allow_html=True)
 
-                    # 🔴 Reset do índice para esconder coluna de índice na exibição
-                    story_page = story_table.iloc[start_idx:end_idx].reset_index(drop=True)
-                    
-                    st.dataframe(
-                        style_dataframe(story_page),
-                        use_container_width=True,
-                        height=400
-                    )
-                
-                # Título centralizado e em negrito
-                st.markdown("<h3 style='text-align: center; font-weight: bold;'>📋 Detalhes dos Containers</h3>", unsafe_allow_html=True)
-                tabela_detalhes = format_detailed_table(detalhes)
-                st.dataframe(
-                    style_dataframe(tabela_detalhes),
-                    use_container_width=True,
-                    height=400
-                )
-                
-                # Informações adicionais
-                col1, col2 = st.columns(2)
-                with col1:
-                    with st.expander("📊 Distribuição por Terminal"):
-                        dist_terminal = detalhes.groupby('TERMINAL DESCARGA')['QTDE CONTAINER'].sum()
-                        dist_terminal_df = dist_terminal.to_frame('Quantidade')
-                        st.dataframe(style_dataframe(dist_terminal_df), use_container_width=True)
-                
-                with col2:
-                    with st.expander("🚢 Informações dos Navios"):
-                        info_navios = detalhes[['NAVIO', 'ARMADOR']].drop_duplicates()
-                        st.dataframe(style_dataframe(info_navios), use_container_width=True)
-            else:
-                st.info("ℹ️ Não há dados para a seleção especificada")
-        
-    except Exception as e:
-        st.error("❌ Ocorreu um erro ao processar os dados")
-        st.exception(e)
+    # Seletores de data e estado em colunas com espaçamento melhorado
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        data_selecionada = st.date_input(
+            "Data de Chegada", 
+            min_value=pd.to_datetime(tabela_formatada.index[0], format='%d/%m/%Y'),
+            max_value=pd.to_datetime(tabela_formatada.index[-1], format='%d/%m/%Y')
+        )
+    with col2:
+        uf_selecionada = st.selectbox(
+            "Estado Destino", 
+            options=[col for col in tabela_pivot.columns if col != 'TOTAL']
+        )
+
+    if data_selecionada and uf_selecionada:
+        create_detailed_tables(df, data_selecionada, uf_selecionada)
+
+    # Fecha o container principal
+    st.markdown('</div>', unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
