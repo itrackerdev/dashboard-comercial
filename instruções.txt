@@ -1,0 +1,41 @@
+Instruções 21/01/2025
+
+
+Exportação - 
+
+Container saiu de PAÍS ORIGEM em ETS, chega no PORTO DESCARGA em ETA que será encaminhado para o UF CONSIGNATÁRIO:
+
+Container será embarcado em DATA EMBARQUE, do ESTADO EXPORTADOR no PORTO EMBARQUE 
+
+
+
+
+
+
+
+Importação - 
+
+Container saiu de PAÍS ORIGEM em ETS, chega no PORTO DESCARGA em ETA que será encaminhado para o UF CONSIGNATÁRIO:
+
+
+
+Origem = Porto de Descarga 
+
+
+Destino = Consignatário
+
+
+
+
+
+
+
+
+
+
+Cabotagem - 
+
+
+
+nome consig e nome remetente
+
