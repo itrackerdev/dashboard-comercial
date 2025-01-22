@@ -525,6 +525,34 @@ def main():
                 )
                 st.markdown('</div>', unsafe_allow_html=True)
 
+                # Tabela de distribuição por terminal
+                st.markdown('<h3 class="subheader">Distribuição por Terminal</h3>', unsafe_allow_html=True)
+                if 'TERMINAL EMBARQUE' in detalhes.columns and 'QTDE CONTEINER' in detalhes.columns:
+                    dist_terminal = detalhes.groupby('TERMINAL EMBARQUE')['QTDE CONTEINER'].sum().reset_index()
+                    dist_terminal.columns = ['Terminal', 'Quantidade']
+                    
+                    dist_terminal['Quantidade'] = dist_terminal['Quantidade'].apply(
+                        lambda x: f"{int(x):,}" if x > 0 else "-"
+                    )
+                    
+                    display_paginated_table_with_search(
+                        dist_terminal.reset_index(drop=True), 
+                        rows_per_page=10, 
+                        key="dist_terminal"
+                    )
+
+                # Informações dos navios
+                st.markdown('<h3 class="subheader">Informações dos Navios</h3>', unsafe_allow_html=True)
+                if 'NAVIO' in detalhes.columns and 'ARMADOR' in detalhes.columns:
+                    info_navios = detalhes[['NAVIO', 'ARMADOR']].drop_duplicates()
+                    info_navios.columns = ['Navio', 'Armador']
+                    
+                    display_paginated_table_with_search(
+                        info_navios.reset_index(drop=True), 
+                        rows_per_page=10, 
+                        key="info_navios"
+                    )
+
             else:
                 st.markdown(
                     '<div class="alert">Não há dados para a seleção especificada</div>',
