@@ -50,11 +50,8 @@ st.markdown(
         text-align: center !important;
     }
 
-    /* Centralização de títulos de tabelas */
-    .stDataFrame caption,
-    .table-header,
-    .streamlit-table caption,
-    div[data-testid="stDataFrameContainer"] div:first-child {
+    /* Centralização de títulos */
+    .main-title, .section-title, .table-title {
         text-align: center !important;
         width: 100% !important;
         margin-bottom: 1rem !important;
@@ -97,85 +94,52 @@ st.markdown(
     }
     
     /* DataFrames aprimorados */
-    .stDataFrame {
-        border: none !important;
+    div[data-testid="stDataFrame"] {
+        background: white;
         border-radius: 12px !important;
-        overflow: hidden;
+        padding: 1rem;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
         margin: 1rem 0;
-        background: white;
         width: 100% !important;
-        max-width: none !important;
-        transition: all 0.3s ease;
-    }
-    
-    /* Container da tabela */
-    div[data-testid="stTable"] {
-        width: 100% !important;
-        max-width: none !important;
     }
 
-    /* Tabela em si */
-    .stDataFrame table {
+    div[data-testid="stDataFrame"] table {
         width: 100% !important;
-        max-width: none !important;
-        table-layout: auto !important;
+        font-size: 0.9rem !important;
     }
-    
-    /* Esconder índices das tabelas */
-    .stDataFrame [data-testid="stDataFrameIndexHeader"] {
-        display: none !important;
-    }
-    
-    .stDataFrame th:first-child {
-        display: none !important;
-    }
-    
-    .stDataFrame td:first-child {
-        display: none !important;
-    }
-    
-    .stDataFrame th {
+
+    div[data-testid="stDataFrame"] th {
         background: linear-gradient(90deg, #0365B0 0%, #034C8C 100%);
         color: white !important;
+        padding: 0.75rem !important;
         font-weight: 600;
-        text-align: center !important;
-        padding: 1rem 0.75rem !important;
-        font-size: 0.95rem !important;
-        border-bottom: 3px solid #F37529;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+        text-align: center !important;
+        border-bottom: 3px solid #F37529;
         white-space: nowrap;
     }
-    
-    .stDataFrame td {
+
+    div[data-testid="stDataFrame"] td {
+        padding: 0.75rem !important;
         text-align: center !important;
-        font-size: 0.9rem !important;
-        padding: 0.875rem 0.75rem !important;
-        transition: all 0.2s ease;
-        background-color: white !important;
+        border-bottom: 1px solid rgba(3, 101, 176, 0.1);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        max-width: 200px;
-    }
-    
-    .stDataFrame tr {
-        border-bottom: 1px solid rgba(3, 101, 176, 0.1);
         transition: all 0.2s ease;
     }
-    
-    .stDataFrame tr:nth-child(even) td {
-        background-color: rgba(3, 101, 176, 0.02) !important;
+
+    div[data-testid="stDataFrame"] tr:nth-child(even) {
+        background-color: rgba(3, 101, 176, 0.02);
     }
-    
-    .stDataFrame tr:hover td {
-        background-color: rgba(243, 117, 41, 0.08) !important;
-        transform: scale(1.005);
+
+    div[data-testid="stDataFrame"] tr:hover {
+        background-color: rgba(243, 117, 41, 0.08);
     }
 
     /* Seletores estilizados */
-    .stSelectbox div[data-baseweb="select"] {
+    div[data-baseweb="select"] {
         background: white;
         border-radius: 12px;
         border: 1px solid rgba(3, 101, 176, 0.2);
@@ -183,17 +147,23 @@ st.markdown(
         transition: all 0.3s ease;
     }
 
-    .stSelectbox div[data-baseweb="select"]:hover {
+    div[data-baseweb="select"]:hover {
         border-color: #F37529;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
-    
-    .stSelectbox label, .stDateInput label {
-        color: #0365B0 !important;
-        font-weight: 600;
-        font-size: 1rem;
-        margin-bottom: 0.5rem;
-        text-align: center !important;
+
+    /* Expanders estilizados */
+    .streamlit-expanderHeader {
+        background: white !important;
+        border-radius: 8px !important;
+        padding: 0.75rem 1rem !important;
+        border: 1px solid rgba(3, 101, 176, 0.2) !important;
+        transition: all 0.3s ease !important;
+    }
+
+    .streamlit-expanderHeader:hover {
+        border-color: #F37529 !important;
+        background: rgba(243, 117, 41, 0.05) !important;
     }
 
     /* Campo de busca melhorado */
@@ -210,8 +180,8 @@ st.markdown(
         border-color: #F37529;
         box-shadow: 0 0 0 2px rgba(243, 117, 41, 0.2);
     }
-    
-    /* Mensagens de alerta estilizadas */
+
+    /* Mensagens de alerta */
     .stAlert {
         border-radius: 12px;
         border-left: 4px solid #F37529;
@@ -221,8 +191,8 @@ st.markdown(
         box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         text-align: center !important;
     }
-    
-    /* Divisores de seção aprimorados */
+
+    /* Divisores */
     hr {
         border: none;
         height: 3px;
@@ -240,65 +210,17 @@ st.markdown(
         margin: 0 auto;
     }
 
-    /* Forçar largura total do container do Streamlit */
+    /* Container do Streamlit */
     .block-container {
         max-width: 100% !important;
-        padding-top: 1rem !important;
-        padding-right: 1rem !important;
-        padding-left: 1rem !important;
-        padding-bottom: 0rem !important;
-    }
-
-    /* Campos de texto e inputs */
-    .stTextInput, .stNumberInput {
-        text-align: center !important;
-    }
-
-    .stTextInput > div > div > input, .stNumberInput > div > div > input {
-        text-align: center !important;
-    }
-
-    /* Paginação e informações da tabela */
-    .pagination-info {
-        text-align: center !important;
-        color: #0365B0 !important;
-        margin: 0.5rem 0 !important;
-        font-weight: 600;
-    }
-
-    /* Loading spinner */
-    .stSpinner {
-        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    }
-
-    @keyframes pulse {
-        0%, 100% {
-            opacity: 1;
-        }
-        50% {
-            opacity: 0.5;
-        }
+        padding: 1rem !important;
     }
 
     /* Responsividade */
     @media (max-width: 768px) {
-        .main {
-            padding: 0.5rem;
-        }
-        
         h1 {
             font-size: 2rem;
             padding: 1rem;
-        }
-        
-        .stDataFrame th {
-            font-size: 0.85rem !important;
-            padding: 0.75rem 0.5rem !important;
-        }
-        
-        .stDataFrame td {
-            font-size: 0.8rem !important;
-            padding: 0.5rem !important;
         }
         
         div[data-testid="stMetric"] {
@@ -308,6 +230,16 @@ st.markdown(
         .subheader {
             padding: 0.75rem 1rem;
             font-size: 1.1rem;
+        }
+        
+        div[data-testid="stDataFrame"] th,
+        div[data-testid="stDataFrame"] td {
+            font-size: 0.85rem !important;
+            padding: 0.5rem !important;
+        }
+        
+        .main {
+            padding: 0.5rem;
         }
     }
     </style>
