@@ -14,7 +14,6 @@ st.set_page_config(
     menu_items=None
 )
 
-# Estilização CSS atualizada
 st.markdown(
     """
     <style>
@@ -129,7 +128,7 @@ st.markdown(
         background-color: rgba(243, 117, 41, 0.08) !important;
     }
 
-    /* Campo de busca melhorado */
+    /* Campo de busca */
     div[data-testid="stTextInput"] input {
         border-radius: 12px;
         border: 1px solid rgba(3, 101, 176, 0.2);
@@ -145,7 +144,7 @@ st.markdown(
         box-shadow: 0 0 0 2px rgba(243, 117, 41, 0.2);
     }
 
-    /* Seletores estilizados */
+    /* Seletores */
     div[data-baseweb="select"] {
         background: white;
         border-radius: 12px;
@@ -165,7 +164,7 @@ st.markdown(
         background: transparent !important;
     }
 
-    /* Expanders estilizados */
+    /* Expanders */
     section[data-testid="stExpander"] > div:first-child {
         border-radius: 12px !important;
         border: 1px solid rgba(3, 101, 176, 0.2) !important;
@@ -195,14 +194,6 @@ st.markdown(
     }
 
     /* Paginação */
-    div.pagination {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 1rem;
-        margin: 1rem 0;
-    }
-
     .pagination-info {
         color: #0365B0;
         font-weight: 600;
@@ -278,7 +269,7 @@ def load_and_process_data():
         df['DATA EMBARQUE'] = pd.to_datetime(df['DATA EMBARQUE'], errors='coerce')
         df['QTDE CONTEINER'] = pd.to_numeric(df['QTDE CONTEINER'].str.replace(',', '.'), errors='coerce')
         df['QTDE CONTEINER'] = df['QTDE CONTEINER'].fillna(0)
-        df['DATA CONSULTA'] = pd.to_datetime(df['DATA CONSULTA'], errors='coerce')  # Adiciona o parsing da coluna
+        df['DATA CONSULTA'] = pd.to_datetime(df['DATA CONSULTA'], format='%d/%m/%Y', errors='coerce')
 
         return df
 
