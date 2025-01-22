@@ -224,10 +224,16 @@ def main():
     # Header com título
     st.markdown("""
     <div class="titulo-dashboard-container">
-        <h1 class="titulo-dashboard">TORRE DE CONTROLE ITRACKER - DASHBOARD</h1>
+        <h1 class="titulo-dashboard">TORRE DE CONTROLE ITRACKER - DASHBOARD COMERCIAL</h1>
         <p class="subtitulo-dashboard">Monitorando em tempo real as Operações de Importação, Exportação e Cabotagem</p>
     </div>
     """, unsafe_allow_html=True)
+
+    # Conteúdo principal
+    st.markdown("""
+    <h2>Bem-vindo ao Sistema de Análise de Cargas</h2>
+    """, unsafe_allow_html=True)
+    st.divider()
     
     if st.sidebar.button("📦 Exportações", use_container_width=True):
         st.switch_page("pages/exportacao.py")
@@ -270,11 +276,6 @@ def main():
         """, unsafe_allow_html=True)
         if st.button("Acessar Cabotagem 🚢", key="cab_btn", use_container_width=True):
             st.switch_page("pages/cabotagem.py")
-    
-    # Conteúdo principal
-    st.markdown("""
-    <h2>Bem-vindo ao Sistema de Análise de Cargas</h2>
-    """, unsafe_allow_html=True)
     
     st.markdown("""
     <div style='background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);'>
