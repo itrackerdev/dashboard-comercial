@@ -22,7 +22,7 @@ st.markdown(
     .stApp {
         background-color: #ffffff;
     }
-    
+
     /* Título principal */
     h1 {
         background: linear-gradient(120deg, #0365B0 0%, #034C8C 100%);
@@ -38,7 +38,7 @@ st.markdown(
         max-width: 90%;
         border-radius: 15px 15px 0 0;
     }
-    
+
     /* Subtítulos e cabeçalhos de seção */
     h2, h3, .subheader {
         background: linear-gradient(90deg, #0365B0 0%, #034C8C 100%);
@@ -85,7 +85,7 @@ st.markdown(
         letter-spacing: 0.5px;
         text-align: center !important;
     }
-    
+
     /* DataFrames */
     div[data-testid="stDataFrame"] {
         background: white;
@@ -226,15 +226,15 @@ st.markdown(
             font-size: 2rem;
             padding: 1rem;
         }
-        
+
         div[data-testid="stMetric"] {
             padding: 1rem !important;
         }
-        
+
         div[data-testid="stMetric"] > div {
             font-size: 1.8rem !important;
         }
-        
+
         .subheader {
             padding: 0.75rem 1rem;
             font-size: 1.1rem;
@@ -270,17 +270,18 @@ def load_and_process_data():
     try:
         file_id = st.secrets["urls"]["planilha_exportacao"]
         excel_content = download_file_from_drive(file_id)
-        
+
         if excel_content is None:
             return pd.DataFrame()
-        
+
         df = pd.read_excel(excel_content)
         df['DATA EMBARQUE'] = pd.to_datetime(df['DATA EMBARQUE'], errors='coerce')
         df['QTDE CONTEINER'] = pd.to_numeric(df['QTDE CONTEINER'].str.replace(',', '.'), errors='coerce')
         df['QTDE CONTEINER'] = df['QTDE CONTEINER'].fillna(0)
-        
+        df['DATA CONSULTA'] = pd.to_datetime(df['DATA CONSULTA'], errors='coerce')  # Adiciona o parsing da coluna
+
         return df
-        
+
     except Exception as e:
         st.error(f"Erro ao carregar os dados: {str(e)}")
         return pd.DataFrame()
@@ -294,7 +295,7 @@ def format_detailed_table(df_filtered):
     """Formata a tabela de detalhes com as informações relevantes"""
     if df_filtered.empty:
         return pd.DataFrame()
-    
+
     colunas_exibir = {
         'TERMINAL EMBARQUE': 'Terminal',
         'NOME EXPORTADOR': 'Empresa',
@@ -308,27 +309,86 @@ def format_detailed_table(df_filtered):
         'MERCADORIA': 'Mercadoria',
         'PAÍS DE DESTINO': 'País Destino'
     }
-    
+
     df_detalhes = df_filtered[colunas_exibir.keys()].copy()
     df_detalhes.columns = colunas_exibir.values()
     df_detalhes['Containers'] = df_detalhes['Containers'].apply(lambda x: f"{int(x):,}" if x > 0 else "-")
-    
+
     return df_detalhes
+
+def style_dataframe(df):
+    """
+    Aplica estilos visuais consistentes a um DataFrame.
+    """
+    df_reset = df.reset_index(drop=True)
+    styles = [
+        dict(selector="", props=[("width", "100%")]),
+        dict(selector="table", props=[("width", "100%")]),
+        dict(selector="th", props=[
+            ("background-color", "#0365B0"),
+            ("color", "white"),
+            ("text-align", "center"),
+            ("font-weight", "bold"),
+            ("padding", "8px"),
+            ("white-space", "nowrap"),
+        ]),
+        dict(selector="td", props=[
+            ("text-align", "center"),
+            ("padding", "8px"),
+            ("border-bottom", "1px solid #ddd"),
+            ("white-space", "nowrap"),
+            ("max-width", "200px"),
+            ("overflow", "hidden"),
+            ("text-overflow", "ellipsis"),
+        ]),
+    ]
+    return df_reset.style.set_table_styles(styles).hide(axis='index')
+
+def display_paginated_table_with_search(df, rows_per_page=10, key=None):
+    """
+    Exibe uma tabela paginada com campo de busca e largura total responsiva.
+    """
+    st.markdown('<div class="section-container">', unsafe_allow_html=True)
+    st.markdown('<div class="table-container">', unsafe_allow_html=True)
+
+    # Campo de busca
+    search_query = st.text_input("Pesquisar na tabela", "", key=f"{key}_search")
+    if search_query:
+        df = df[df.apply(lambda row: row.astype(str).str.contains(search_query, case=False).any(), axis=1)]
+
+    # Paginação
+    total_rows = df.shape[0]
+    total_pages = (total_rows // rows_per_page) + (1 if total_rows % rows_per_page > 0 else 0)
+    page = st.number_input("Página", min_value=1, max_value=max(1, total_pages), step=1, value=1, key=f"{key}_page")
+
+    start_idx = (page - 1) * rows_per_page
+    end_idx = start_idx + rows_per_page
+    paginated_data = df.iloc[start_idx:end_idx].reset_index(drop=True)  # Remove os índices aqui
+
+    # Estilização e exibição
+    styled_table = style_dataframe(paginated_data)
+    st.markdown('<div class="table-control pagination-info">', unsafe_allow_html=True)
+    st.markdown(f'Exibindo {start_idx + 1} a {min(end_idx, total_rows)} de {total_rows} registros', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown(styled_table.to_html(), unsafe_allow_html=True)
+
+    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 def main():
     st.markdown('<div class="main-container">', unsafe_allow_html=True)
-    
+
     # Título principal
-    st.markdown('<h1 class="main-title">📦 Previsão de Exportações por Estado</h1>', unsafe_allow_html=True)
-    
+    st.markdown('<h1 class="main-title">🚢 Previsão de Exportações de Containers </h1>', unsafe_allow_html=True)
+
     try:
         # Carregando dados
         df = load_and_process_data()
-        
+
         if df.empty:
             st.error("Não foi possível carregar os dados.")
             return
-        
+
         # Tabela principal
         dados_pivot = df.groupby(['DATA EMBARQUE', 'ESTADO EXPORTADOR'])['QTDE CONTEINER'].sum().reset_index()
         tabela_pivot = dados_pivot.pivot(
@@ -336,15 +396,15 @@ def main():
             columns='ESTADO EXPORTADOR',
             values='QTDE CONTEINER'
         ).fillna(0)
-        
+
         # Ordena o índice em ordem decrescente
         tabela_pivot = tabela_pivot.sort_index(ascending=False)
         tabela_pivot['TOTAL'] = tabela_pivot.sum(axis=1)
-        
+
         # Métricas principais
         total_containers = int(tabela_pivot['TOTAL'].sum())
-        media_diaria = int(tabela_pivot['TOTAL'].mean())
-        
+        ultima_atualizacao = pd.to_datetime(df['DATA CONSULTA']).max()  # Obtém a última data de consulta
+
         col1, col2 = st.columns(2)
         with col1:
             st.metric(
@@ -354,16 +414,34 @@ def main():
             )
         with col2:
             st.metric(
-                "MÉDIA DIÁRIA",
-                f"{media_diaria:,}",
-                help="Média diária de containers"
+                "ÚLTIMA ATUALIZAÇÃO",
+                ultima_atualizacao.strftime('%d/%m/%Y'),
+                help="Data da última atualização dos dados"
             )
-        
+
+
         st.markdown('<hr>', unsafe_allow_html=True)
-        
+
         # Título da seção de previsão
         st.markdown('<h3 class="subheader">Previsão de Exportações por Estado</h3>', unsafe_allow_html=True)
-        
+
+        # Container para a tabela principal com busca e paginação
+        st.markdown('<div class="table-container">', unsafe_allow_html=True)
+
+        tabela_formatada = tabela_pivot.copy()
+        for coluna in tabela_formatada.columns:
+            tabela_formatada[coluna] = tabela_formatada[coluna].apply(lambda x: f"{int(x):,}" if x > 0 else "-")
+        tabela_formatada.index = tabela_formatada.index.strftime('%d/%m/%Y')
+
+        # Exibe tabela principal paginada
+        display_paginated_table_with_search(
+            tabela_formatada.reset_index(),
+            rows_per_page=20,
+            key="tabela_principal"
+        )
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
         # Container para os seletores
         st.markdown('<div class="selectors-container">', unsafe_allow_html=True)
         col1, col2 = st.columns(2)
@@ -381,28 +459,33 @@ def main():
             )
         st.markdown('</div>', unsafe_allow_html=True)
 
-        # Formatação da tabela
-        tabela_formatada = tabela_pivot.copy()
-        for coluna in tabela_formatada.columns:
-            tabela_formatada[coluna] = tabela_formatada[coluna].apply(lambda x: f"{int(x):,}" if x > 0 else "-")
-        
-        tabela_formatada.index = tabela_formatada.index.strftime('%d/%m/%Y')
-        
-        # Campo de busca
-        st.text_input("Pesquisar na tabela", key="search", help="Digite para filtrar os dados")
-        search_query = st.session_state.search
-
-        # Container para a tabela principal
-        st.markdown('<div class="table-container">', unsafe_allow_html=True)
-        st.dataframe(
-            tabela_formatada,
-            use_container_width=True,
-            height=400
-        )
-        st.markdown('</div>', unsafe_allow_html=True)
-        
-        # Seção de detalhes
+        # Exibe resumo de exportações por porto somente após a aplicação do filtro
         if data_selecionada and uf_selecionada:
+            st.markdown('<hr>', unsafe_allow_html=True)
+            st.markdown(
+                f'<h3 class="subheader">Resumo de Exportações por Porto - {uf_selecionada} ({data_selecionada.strftime("%d/%m/%Y")})</h3>',
+                unsafe_allow_html=True
+            )
+
+            resumo_filtrado = df[
+                (df['DATA EMBARQUE'].dt.date == data_selecionada.date()) &
+                (df['ESTADO EXPORTADOR'] == uf_selecionada)
+            ]
+
+            if resumo_filtrado.empty:
+                st.markdown('<div class="alert">Sem dados para o filtro selecionado.</div>', unsafe_allow_html=True)
+            else:
+                resumo_agrupado = resumo_filtrado.groupby(['DATA EMBARQUE', 'ESTADO EXPORTADOR', 'PORTO EMBARQUE'])['QTDE CONTEINER'].sum().reset_index()
+                resumo_agrupado['DATA EMBARQUE'] = resumo_agrupado['DATA EMBARQUE'].dt.strftime('%d/%m/%Y')
+                resumo_agrupado['QTDE CONTEINER'] = resumo_agrupado['QTDE CONTEINER'].apply(lambda x: f"{int(x):,}" if x > 0 else "-")
+
+                display_paginated_table_with_search(
+                    resumo_agrupado.reset_index(drop=True),
+                    rows_per_page=10,
+                    key="tabela_resumo_filtrada"
+                )
+
+            # Seção de detalhes
             st.markdown('<hr>', unsafe_allow_html=True)
             st.markdown(
                 f'<h3 class="subheader">Detalhes para {uf_selecionada} - {data_selecionada.strftime("%d/%m/%Y")}</h3>',
@@ -412,7 +495,7 @@ def main():
             detalhes = get_detailed_info(df, data_selecionada, uf_selecionada)
             if not detalhes.empty:
                 tabela_detalhes = format_detailed_table(detalhes)
-                
+
                 # Cards de métricas detalhadas
                 st.markdown('<div class="metrics-details">', unsafe_allow_html=True)
                 col1, col2, col3, col4 = st.columns(4)
@@ -441,56 +524,24 @@ def main():
                         help="Número de terminais de embarque"
                     )
                 st.markdown('</div>', unsafe_allow_html=True)
-                
-                # Tabela de detalhes
+
+                # Exibir tabela de detalhes com paginação e busca
                 st.markdown('<div class="details-table">', unsafe_allow_html=True)
-                st.dataframe(
-                    tabela_detalhes,
-                    use_container_width=True,
-                    height=400
+                display_paginated_table_with_search(
+                    tabela_detalhes.reset_index(drop=True),
+                    rows_per_page=10,
+                    key="detalhes_tabela"
                 )
                 st.markdown('</div>', unsafe_allow_html=True)
-                
-                # Informações adicionais em expansores
-                st.markdown('<div class="expanders-grid">', unsafe_allow_html=True)
-                col1, col2 = st.columns(2)
-                
-                with col1:
-                    with st.expander("📊 Distribuição por Terminal", expanded=True):
-                        dist_terminal = detalhes.groupby('TERMINAL EMBARQUE')['QTDE CONTEINER'].sum().sort_values(ascending=False)
-                        st.dataframe(
-                            dist_terminal.map(lambda x: f"{int(x):,}"),
-                            use_container_width=True
-                        )
-                
-                with col2:
-                    with st.expander("🌎 Países de Destino", expanded=True):
-                        dist_paises = detalhes.groupby('PAÍS DE DESTINO')['QTDE CONTEINER'].sum().sort_values(ascending=False)
-                        st.dataframe(
-                            dist_paises.map(lambda x: f"{int(x):,}"),
-                            use_container_width=True
-                        )
-                
-                with st.expander("🚢 Informações dos Navios"):
-                    info_navios = detalhes[['NAVIO', 'ARMADOR', 'PORTO DESCARGA']].drop_duplicates()
-                    st.dataframe(info_navios, use_container_width=True)
-                
-                with st.expander("📦 Tipos de Carga"):
-                    tipos_carga = detalhes.groupby(['MERCADORIA', 'TIPO CONTEINER'])['QTDE CONTEINER'].sum().sort_values(ascending=False)
-                    st.dataframe(
-                        tipos_carga.map(lambda x: f"{int(x):,}"),
-                        use_container_width=True
-                    )
-                st.markdown('</div>', unsafe_allow_html=True)
+
             else:
                 st.markdown(
                     '<div class="alert">Não há dados para a seleção especificada</div>',
                     unsafe_allow_html=True
                 )
-        
     except Exception as e:
         st.error(f"Erro ao carregar os dados: {str(e)}")
-    
+
     st.markdown('</div>', unsafe_allow_html=True)
 
 if __name__ == "__main__":
