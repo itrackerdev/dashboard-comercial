@@ -229,6 +229,8 @@ def main():
     </div>
     """, unsafe_allow_html=True)
 
+    st.divider()
+
     # Conteúdo principal
     st.markdown("""
     <h2>Bem-vindo ao Sistema de Análise de Cargas</h2>

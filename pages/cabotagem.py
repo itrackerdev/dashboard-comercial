@@ -14,6 +14,182 @@ st.set_page_config(
     menu_items=None
 )
 
+st.markdown("""
+    <style>
+    /* Estilos gerais */
+    .stApp {
+        background-color: #ffffff;
+    }
+
+    /* Título principal */
+    h1 {
+        background: linear-gradient(120deg, #0365B0 0%, #034C8C 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-align: center;
+        font-size: 2.5rem;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        margin: 2rem auto;
+        padding: 1.5rem;
+        border-bottom: 4px solid #F37529;
+        max-width: 90%;
+        border-radius: 15px 15px 0 0;
+    }
+
+    /* Subtítulos e cabeçalhos de seção */
+    h2, h3, .subheader {
+        background: linear-gradient(90deg, #0365B0 0%, #034C8C 100%);
+        color: white !important;
+        padding: 1rem 1.5rem;
+        margin: 1.5rem 0;
+        border-radius: 12px;
+        font-weight: 600;
+        box-shadow: 0 4px 6px rgba(3, 101, 176, 0.1);
+        text-align: center !important;
+    }
+
+    /* Cards de métricas */
+    div[data-testid="stMetric"] {
+        background: linear-gradient(135deg, #0365B0 0%, #034C8C 100%);
+        border-radius: 16px;
+        padding: 1.5rem !important;
+        box-shadow: 0 10px 15px -3px rgba(3, 101, 176, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(4px);
+        transition: all 0.3s ease;
+        margin: 0.5rem 0;
+        text-align: center !important;
+    }
+
+    div[data-testid="stMetric"]:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 20px -3px rgba(3, 101, 176, 0.15);
+    }
+
+    div[data-testid="stMetric"] > div {
+        color: white !important;
+        font-size: 2.5rem !important;
+        font-weight: 700;
+        text-align: center !important;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    div[data-testid="stMetric"] label {
+        color: white !important;
+        font-weight: 600;
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        text-align: center !important;
+    }
+
+    /* DataFrames */
+    div[data-testid="stDataFrame"] {
+        background: white;
+        border-radius: 12px !important;
+        padding: 1rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+        margin: 1rem 0;
+        width: 100% !important;
+    }
+
+    div[data-testid="stDataFrame"] table {
+        width: 100% !important;
+        font-size: 0.9rem !important;
+    }
+
+    div[data-testid="stDataFrame"] th {
+        background: linear-gradient(90deg, #0365B0 0%, #034C8C 100%);
+        color: white !important;
+        padding: 1rem 0.75rem !important;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        text-align: center !important;
+        border-bottom: 3px solid #F37529;
+        white-space: nowrap;
+        font-size: 0.95rem !important;
+    }
+
+    div[data-testid="stDataFrame"] td {
+        padding: 0.875rem 0.75rem !important;
+        text-align: center !important;
+        border-bottom: 1px solid rgba(3, 101, 176, 0.1);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        background-color: white !important;
+        transition: all 0.2s ease;
+    }
+
+    div[data-testid="stDataFrame"] tr:hover td {
+        background-color: rgba(243, 117, 41, 0.08) !important;
+    }
+
+    /* Inputs e Seletores */
+    div[data-testid="stSelectbox"], div[data-testid="stNumberInput"] {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid rgba(3, 101, 176, 0.2);
+        padding: 0.5rem;
+    }
+
+    div[data-testid="stSelectbox"]:hover, div[data-testid="stNumberInput"]:hover {
+        border-color: #F37529;
+        box-shadow: 0 4px 6px rgba(3, 101, 176, 0.1);
+    }
+
+    /* Radio buttons */
+    div[data-testid="stRadio"] > div {
+        background-color: white;
+        border-radius: 12px;
+        padding: 1rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Containers e margins */
+    .main-container {
+        padding: 1rem 2rem;
+        max-width: none !important;
+    }
+
+    .stAlert {
+        background-color: rgba(243, 117, 41, 0.05);
+        border-left: 4px solid #F37529;
+        padding: 1rem;
+        margin: 1rem 0;
+        border-radius: 0.5rem;
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+        h1 {
+            font-size: 2rem;
+            padding: 1rem;
+        }
+
+        div[data-testid="stMetric"] {
+            padding: 1rem !important;
+        }
+
+        div[data-testid="stMetric"] > div {
+            font-size: 1.8rem !important;
+        }
+
+        .main-container {
+            padding: 0.5rem;
+        }
+
+        div[data-testid="stDataFrame"] th,
+        div[data-testid="stDataFrame"] td {
+            font-size: 0.85rem !important;
+            padding: 0.5rem !important;
+        }
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
 def download_file_from_drive(file_id):
     """Download arquivo do Google Drive"""
     url = f"https://drive.google.com/uc?id={file_id}"
@@ -278,7 +454,7 @@ def create_state_summary_table(df, view_type='destinatario'):
             
             # Agrupar por data e estado de destino
             table_data = []
-            for date in sorted(df_work['DATA DE EMBARQUE'].unique()):
+            for date in sorted(df_work['DATA DE EMBARQUE'].unique(), reverse=True):
                 if pd.isna(date):
                     continue
                     
@@ -382,107 +558,104 @@ def get_estado_info(df, data, uf):
         return pd.DataFrame()
 
 def main():
-    st.title("🚢 Análise de Operações de Cabotagem")
-    
-    # Carregando dados
-    df = load_and_process_data()
-    
-    if df.empty:
-        st.error("Não foi possível carregar os dados.")
-        return
+   st.markdown('<div class="main-container">', unsafe_allow_html=True)
+   
+   st.markdown('<h1 class="main-title">🚢 Análise de Operações de Cabotagem</h1>', unsafe_allow_html=True)
+   
+   df = load_and_process_data()
+   
+   if df.empty:
+       st.error("Não foi possível carregar os dados.")
+       return
 
-    try:
-        # Status dos Dados
-        st.subheader("📊 Status dos Dados")
-        
-        # Exibindo última atualização
-        ultima_atualizacao = df['DATA CONSULTA'].max()
-        ultima_atualizacao_formatada = format_date_safe(ultima_atualizacao)
-        st.write(f"Última atualização: {ultima_atualizacao_formatada}")
-        
-        # Total de registros
-        total_registros = len(df)
-        st.write(f"Total de registros únicos: {total_registros:,}")
-        
-        # Seleção de Data
-        datas_disponiveis = get_formatted_dates(df)
-        if not datas_disponiveis:
-            st.error("Não há datas disponíveis para seleção")
-            return
-            
-        data_selecionada = st.selectbox("Selecione a Data", datas_disponiveis, key='data_estado')
-        
-        # Seleção de Local (Estado ou Cidade)
-        view_type = st.radio(
-            "Selecione o tipo de visualização:",
-            ['Estado Destinatário', 'Cidade Remetente'],
-            index=0  # Estado Destinatário como padrão
-        )
-        
-        if view_type == 'Estado Destinatário':
-            locais = sorted([
-                e for e in df['DESTINATÁRIO - ESTADO'].unique()
-                if e is not None and str(e).strip()
-            ])
-            local_label = "Selecione o Estado"
-        else:
-            locais = sorted([
-                e for e in df['ESTADO_ORIGEM'].unique()
-                if e is not None and str(e).strip()
-            ])
-            local_label = "Selecione o Estado"
-        
-        local_selecionado = st.selectbox(local_label, locais, key='local_select')
-        
-        # Criar tabela baseada na seleção
-        table_type = 'destinatario' if view_type == 'Estado Destinatário' else 'remetente'
-        summary_df = create_state_summary_table(df, table_type)
-        
-        if not summary_df.empty:
-            st.dataframe(summary_df, use_container_width=True)
-            
-        # Exibindo detalhes
-        if data_selecionada and local_selecionado:
-            if view_type == 'Estado Destinatário':
-                mask = (
-                    (df['DATA DE EMBARQUE'].dt.strftime('%d/%m/%Y') == data_selecionada) & 
-                    (df['DESTINATÁRIO - ESTADO'] == local_selecionado)
-                )
-            else:
-                mask = (
-                    (df['DATA DE EMBARQUE'].dt.strftime('%d/%m/%Y') == data_selecionada) & 
-                    (df['REMETENTE - CIDADE'] == local_selecionado)
-                )
-            
-            df_filtered = df[mask].copy();
-            
-            # Exibindo métricas
-            col1, col2, col3 = st.columns(3)
-            
-            with col1:
-                total_containers = int(df_filtered['QUANTIDADE TEUS'].sum())
-                st.metric("Total de Contêineres", total_containers)
-                
-            with col2:
-                total_empresas = len(df_filtered['ARMADOR'].unique())
-                st.metric("Número de Empresas", total_empresas)
-                
-            with col3:
-                total_navios = len(df_filtered['NAVIO'].unique())
-                st.metric("Total de Navios", total_navios)
-            
-        # Exibindo detalhes
-        if data_selecionada and local_selecionado:
-            if view_type == 'Estado Destinatário':
-                st.subheader(f"Detalhes para Estado: {local_selecionado} - {data_selecionada}")
-            else:
-                st.subheader(f"Detalhes para Cidade: {local_selecionado} - {data_selecionada}")
-            
-            format_estado_table(df_filtered)
-        
-    except Exception as e:
-        st.error(f"Erro ao processar dados: {str(e)}")
-        st.exception(e)
+   try:
+       col1, col2 = st.columns(2)
+       with col1:
+           st.metric(
+               "TOTAL DE REGISTROS", 
+               f"{len(df):,}",
+               help="Total de registros únicos"
+           )
+       with col2:
+           ultima_atualizacao = df['DATA CONSULTA'].max()
+           st.metric(
+               "ÚLTIMA ATUALIZAÇÃO",
+               format_date_safe(ultima_atualizacao),
+               help="Data da última atualização dos dados"
+           )
+
+       st.markdown('<hr>', unsafe_allow_html=True)
+
+       st.markdown('<h3 class="subheader">Resumo de Operações</h3>', unsafe_allow_html=True)
+       summary_df = create_state_summary_table(df, 'destinatario')
+       
+       if not summary_df.empty:
+           st.dataframe(
+               data=summary_df,
+               use_container_width=True,
+               hide_index=True
+           )
+
+       st.markdown('<hr>', unsafe_allow_html=True)
+           
+       col1, col2 = st.columns(2)
+       with col1:
+           datas_disponiveis = get_formatted_dates(df)
+           if not datas_disponiveis:
+               st.error("Não há datas disponíveis para seleção")
+               return
+           data_selecionada = st.selectbox("Selecione a Data", datas_disponiveis, key='data_estado')
+       
+       with col2:    
+           view_type = st.radio(
+               "Tipo de Visualização",
+               ['Estado Destinatário', 'Cidade Remetente'],
+               index=0
+           )
+
+       locais = sorted([
+           e for e in df['DESTINATÁRIO - ESTADO'].unique()
+           if e is not None and str(e).strip()
+       ]) if view_type == 'Estado Destinatário' else sorted([
+           e for e in df['ESTADO_ORIGEM'].unique()
+           if e is not None and str(e).strip()
+       ])
+       
+       local_selecionado = st.selectbox(
+           "Selecione o Estado" if view_type == 'Estado Destinatário' else "Selecione a Cidade", 
+           locais, 
+           key='local_select'
+       )
+       
+       if data_selecionada and local_selecionado:
+           st.markdown('<hr>', unsafe_allow_html=True)
+           
+           mask = (
+               (df['DATA DE EMBARQUE'].dt.strftime('%d/%m/%Y') == data_selecionada) & 
+               (df['DESTINATÁRIO - ESTADO' if view_type == 'Estado Destinatário' else 'REMETENTE - CIDADE'] == local_selecionado)
+           )
+           
+           df_filtered = df[mask].copy()
+           
+           col1, col2, col3 = st.columns(3)
+           with col1:
+               st.metric("Total de Contêineres", int(df_filtered['QUANTIDADE TEUS'].sum()))
+           with col2:
+               st.metric("Número de Empresas", len(df_filtered['ARMADOR'].unique()))
+           with col3:
+               st.metric("Total de Navios", len(df_filtered['NAVIO'].unique()))
+           
+           st.markdown(
+               f'<h3 class="subheader">Detalhes para {view_type}: {local_selecionado} - {data_selecionada}</h3>', 
+               unsafe_allow_html=True
+           )
+           format_estado_table(df_filtered)
+       
+   except Exception as e:
+       st.error(f"Erro ao processar dados: {str(e)}")
+       st.exception(e)
+
+   st.markdown('</div>', unsafe_allow_html=True)
 
 if __name__ == "__main__":
-    main()
+   main()

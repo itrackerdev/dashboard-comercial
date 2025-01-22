@@ -9,3 +9,10 @@
 2025-01-19 14:50:08.555000 - Registros processados: 19590, Registros únicos após processamento: 10019
 2025-01-19 14:50:30.049365 - Registros processados: 19590, Registros únicos após processamento: 10019
 2025-01-21 09:49:27.008369 - Registros processados: 19590, Registros únicos após processamento: 10019
+2025-01-22 16:03:34.223789 - Registros processados: 22154, Registros únicos após processamento: 10486
+2025-01-22 16:06:06.268612 - Registros processados: 22154, Registros únicos após processamento: 10486
+2025-01-22 16:07:05.502607 - Registros processados: 22154, Registros únicos após processamento: 10486
+2025-01-22 16:10:57.458537 - Registros processados: 22154, Registros únicos após processamento: 10486
+2025-01-22 16:12:25.595802 - Registros processados: 22154, Registros únicos após processamento: 10486
+2025-01-22 16:13:00.322638 - Registros processados: 22154, Registros únicos após processamento: 10486
+2025-01-22 16:13:08.422722 - Registros processados: 22154, Registros únicos após processamento: 10486

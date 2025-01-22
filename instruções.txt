@@ -1,38 +1,27 @@
 Instruções 21/01/2025
 
-
 Exportação - 
+
 Container será embarcado em DATA EMBARQUE, do ESTADO EXPORTADOR no PORTO EMBARQUE 
 
-
-
-
-
-
+"box de filtragem por origem destino consignatario e remetente."
 
 Importação - 
 
 Container saiu de PAÍS ORIGEM em ETS, chega no PORTO DESCARGA em ETA que será encaminhado para o UF CONSIGNATÁRIO:
 
-
-
 Origem = Porto de Descarga 
-
 
 Destino = Consignatário
 
 
-
-
-
-
-
-
-
-
 Cabotagem - 
-
-
 
 nome consig e nome remetente
 
+
+
+
+Informar em cada pagina o range de periodo de datas utilizado como filtro
+
+aplicar filtro com nome 

@@ -130,74 +130,34 @@ st.markdown(
 
     /* Campo de busca */
     div[data-testid="stTextInput"] input {
-        border-radius: 12px;
-        border: 1px solid rgba(3, 101, 176, 0.2);
-        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid #d9d9d9;
+        padding: 0.75rem;
         font-size: 1rem;
-        width: 100%;
-        text-align: center;
         transition: all 0.3s ease;
     }
 
     div[data-testid="stTextInput"] input:focus {
-        border-color: #F37529;
-        box-shadow: 0 0 0 2px rgba(243, 117, 41, 0.2);
-    }
-
-    /* Seletores */
-    div[data-baseweb="select"] {
-        background: white;
-        border-radius: 12px;
-        border: 1px solid rgba(3, 101, 176, 0.2);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        transition: all 0.3s ease;
-    }
-
-    div[data-baseweb="select"]:hover {
-        border-color: #F37529;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    div[data-baseweb="select"] > div {
-        border-radius: 12px !important;
-        border: none !important;
-        background: transparent !important;
-    }
-
-    /* Expanders */
-    section[data-testid="stExpander"] > div:first-child {
-        border-radius: 12px !important;
-        border: 1px solid rgba(3, 101, 176, 0.2) !important;
-        background: white !important;
-        transition: all 0.3s ease !important;
-    }
-
-    section[data-testid="stExpander"] > div:first-child:hover {
-        border-color: #F37529 !important;
-        background: rgba(243, 117, 41, 0.05) !important;
-    }
-
-    /* Divisores */
-    hr {
-        border: none;
-        height: 3px;
-        background: linear-gradient(to right, #0365B0, #F37529);
-        margin: 2rem 0;
-        opacity: 0.7;
-        border-radius: 3px;
-    }
-
-    /* Container principal */
-    .main-container {
-        padding: 1rem 2rem;
-        max-width: none !important;
+        border-color: #0365B0;
+        box-shadow: 0 0 4px rgba(3, 101, 176, 0.4);
     }
 
     /* Paginação */
-    .pagination-info {
+    .pagination-container {
+        text-align: center;
+        font-size: 0.8rem;
+        color: #555;
+        margin-top: 1rem;
+        padding: 0.25rem;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .pagination-container span {
+        font-weight: normal;
         color: #0365B0;
-        font-weight: 600;
-        text-align: center !important;
     }
 
     /* Mensagens de alerta */
@@ -323,7 +283,7 @@ def style_dataframe(df):
             ("padding", "8px"),
             ("white-space", "nowrap"),
         ]),
-        dict(selector="td", props=[
+        dict(selector="td", props=[ 
             ("text-align", "center"),
             ("padding", "8px"),
             ("border-bottom", "1px solid #ddd"),
@@ -337,33 +297,67 @@ def style_dataframe(df):
 
 def display_paginated_table_with_search(df, rows_per_page=10, key=None):
     """
-    Exibe uma tabela paginada com campo de busca e largura total responsiva.
+    Exibe uma tabela paginada com busca e posiciona os botões de paginação no lado direito, abaixo da tabela.
     """
-    st.markdown('<div class="section-container">', unsafe_allow_html=True)
-    st.markdown('<div class="table-container">', unsafe_allow_html=True)
-
-    # Campo de busca
-    search_query = st.text_input("Pesquisar na tabela", "", key=f"{key}_search")
+    # Campo de busca acima da tabela
+    search_query = st.text_input(
+        "Pesquisar",
+        "",
+        placeholder="Digite para buscar na tabela...",
+        key=f"{key}_search"
+    )
     if search_query:
         df = df[df.apply(lambda row: row.astype(str).str.contains(search_query, case=False).any(), axis=1)]
 
-    # Paginação
+    # Configurações de paginação
     total_rows = df.shape[0]
     total_pages = (total_rows // rows_per_page) + (1 if total_rows % rows_per_page > 0 else 0)
-    page = st.number_input("Página", min_value=1, max_value=max(1, total_pages), step=1, value=1, key=f"{key}_page")
+    page = st.session_state.get(f"{key}_page", 1)
 
+    # Paginando os dados
     start_idx = (page - 1) * rows_per_page
     end_idx = start_idx + rows_per_page
-    paginated_data = df.iloc[start_idx:end_idx].reset_index(drop=True)  # Remove os índices aqui
+    paginated_data = df.iloc[start_idx:end_idx].reset_index(drop=True)
 
-    # Estilização e exibição
+    # Estilização e exibição da tabela
     styled_table = style_dataframe(paginated_data)
-    st.markdown('<div class="table-control pagination-info">', unsafe_allow_html=True)
-    st.markdown(f'Exibindo {start_idx + 1} a {min(end_idx, total_rows)} de {total_rows} registros', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
     st.markdown(styled_table.to_html(), unsafe_allow_html=True)
 
-    st.markdown('</div>', unsafe_allow_html=True)
+    # Paginação abaixo da tabela
+    st.markdown(f"""
+        <div class="pagination-container">
+            <span>Exibindo {start_idx + 1} a {min(end_idx, total_rows)} de {total_rows} registros</span>
+            <br>
+            Página {page} de {total_pages}
+        </div>
+    """, unsafe_allow_html=True)
+
+    # Container para os botões no lado direito
+    st.markdown(
+        """
+        <style>
+        .button-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 1rem;
+        }
+        .button-container button {
+            margin-left: 0.5rem;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+    st.markdown('<div class="button-container">', unsafe_allow_html=True)
+
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        if st.button("⬅️ Anterior", key=f"{key}_prev") and page > 1:
+            st.session_state[f"{key}_page"] = page - 1
+    with col2:
+        if st.button("Próxima ➡️", key=f"{key}_next") and page < total_pages:
+            st.session_state[f"{key}_page"] = page + 1
+
     st.markdown('</div>', unsafe_allow_html=True)
 
 def main():
@@ -410,30 +404,9 @@ def main():
                 help="Data da última atualização dos dados"
             )
 
-
         st.markdown('<hr>', unsafe_allow_html=True)
 
-        # Título da seção de previsão
-        st.markdown('<h3 class="subheader">Previsão de Exportações por Estado</h3>', unsafe_allow_html=True)
-
-        # Container para a tabela principal com busca e paginação
-        st.markdown('<div class="table-container">', unsafe_allow_html=True)
-
-        tabela_formatada = tabela_pivot.copy()
-        for coluna in tabela_formatada.columns:
-            tabela_formatada[coluna] = tabela_formatada[coluna].apply(lambda x: f"{int(x):,}" if x > 0 else "-")
-        tabela_formatada.index = tabela_formatada.index.strftime('%d/%m/%Y')
-
-        # Exibe tabela principal paginada
-        display_paginated_table_with_search(
-            tabela_formatada.reset_index(),
-            rows_per_page=20,
-            key="tabela_principal"
-        )
-
-        st.markdown('</div>', unsafe_allow_html=True)
-
-        # Container para os seletores
+        # Filtros
         st.markdown('<div class="selectors-container">', unsafe_allow_html=True)
         col1, col2 = st.columns(2)
         with col1:
@@ -450,6 +423,22 @@ def main():
             )
         st.markdown('</div>', unsafe_allow_html=True)
 
+        # Exibe a tabela principal com busca e paginação
+        st.markdown('<div class="table-container">', unsafe_allow_html=True)
+        tabela_formatada = tabela_pivot.copy()
+        for coluna in tabela_formatada.columns:
+            tabela_formatada[coluna] = tabela_formatada[coluna].apply(lambda x: f"{int(x):,}" if x > 0 else "-")
+        tabela_formatada.index = tabela_formatada.index.strftime('%d/%m/%Y')
+
+        # Exibe tabela principal paginada
+        display_paginated_table_with_search(
+            tabela_formatada.reset_index(),
+            rows_per_page=20,
+            key="tabela_principal"
+        )
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
         # Exibe resumo de exportações por porto somente após a aplicação do filtro
         if data_selecionada and uf_selecionada:
             st.markdown('<hr>', unsafe_allow_html=True)
@@ -459,7 +448,7 @@ def main():
             )
 
             resumo_filtrado = df[
-                (df['DATA EMBARQUE'].dt.date == data_selecionada.date()) &
+                (df['DATA EMBARQUE'].dt.date == data_selecionada.date()) & 
                 (df['ESTADO EXPORTADOR'] == uf_selecionada)
             ]
 
