@@ -560,6 +560,9 @@ def main():
         values='QTDE CONTAINER'
     ).fillna(0)
 
+    # Ordena o índice em ordem decrescente para mostrar datas mais recentes primeiro
+    tabela_pivot = tabela_pivot.sort_index(ascending=False)  # Adicione esta linha
+
     tabela_pivot['TOTAL'] = tabela_pivot.sum(axis=1)
 
     # Adiciona resumo de métricas
@@ -611,10 +614,15 @@ def main():
     st.markdown('<div class="selectors-container" style="text-align: center;">', unsafe_allow_html=True)
     col1, col2 = st.columns([1, 1])
     with col1:
+        # Encontra a data mais antiga e mais recente corretamente
+        data_mais_antiga = pd.to_datetime(tabela_formatada.index[-1], format='%d/%m/%Y')
+        data_mais_recente = pd.to_datetime(tabela_formatada.index[0], format='%d/%m/%Y')
+
         data_selecionada = st.date_input(
             "Data de Chegada", 
-            min_value=pd.to_datetime(tabela_formatada.index[0], format='%d/%m/%Y'),
-            max_value=pd.to_datetime(tabela_formatada.index[-1], format='%d/%m/%Y'),
+            min_value=data_mais_antiga,
+            max_value=data_mais_recente,
+            value=data_mais_recente,  # Define o valor padrão como a data mais recente
             key="data_chegada"
         )
     with col2:
