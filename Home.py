@@ -1,15 +1,4 @@
 import streamlit as st
-import pandas as pd
-import json
-import os
-from PIL import Image
-import requests
-from io import BytesIO
-from style import apply_styles
-
-# Carregar configurações
-with open('config.json', 'r', encoding='utf-8') as f:
-    config = json.load(f)
 
 st.set_page_config(
     page_title="Sistema de Análise de Cargas",
@@ -19,8 +8,19 @@ st.set_page_config(
     menu_items=None
 )
 
-# Aplicar estilos
+import pandas as pd
+import json
+import os
+from PIL import Image
+import requests
+from io import BytesIO
+from style import apply_styles
+
 apply_styles()
+
+# Carregar configurações
+with open('config.json', 'r', encoding='utf-8') as f:
+    config = json.load(f)
 
 def carregar_logo():
     try:
@@ -37,6 +37,16 @@ def carregar_logo():
         return None
 
 def main():
+    # Sidebar navigation
+    if st.sidebar.button("🏠 Home", key="home_btn", use_container_width=True):
+        st.switch_page("Home.py")
+    if st.sidebar.button("🚢 Cabotagem", key="cab_side_btn", use_container_width=True):
+        st.switch_page("pages/cabotagem.py")
+    if st.sidebar.button("📦 Exportação", key="exp_side_btn", use_container_width=True):
+        st.switch_page("pages/exportacao.py")
+    if st.sidebar.button("📥 Importação", key="imp_side_btn", use_container_width=True):
+        st.switch_page("pages/importacao.py")
+
     st.markdown('<div class="main-container">', unsafe_allow_html=True)
 
     # Logo centralizada
@@ -63,15 +73,6 @@ def main():
     st.markdown("<h2>Bem-vindo ao Sistema de Análise de Cargas</h2>", unsafe_allow_html=True)
     st.divider()
 
-    if st.sidebar.button("📦 Exportações", use_container_width=True):
-        st.switch_page("pages/exportacao.py")
-
-    if st.sidebar.button("📥 Importações", use_container_width=True):
-        st.switch_page("pages/importacao.py")
-
-    if st.sidebar.button("🚢 Cabotagem", use_container_width=True):
-        st.switch_page("pages/cabotagem.py")
-
     # Indicadores clicáveis
     col1, col2, col3 = st.columns(3)
 
@@ -85,7 +86,7 @@ def main():
             """,
             unsafe_allow_html=True
         )
-        if st.button("Acessar Exportações 📦", key="exp_btn", use_container_width=True):
+        if st.button("Acessar Exportações 📦", key="exp_main_btn", use_container_width=True):
             st.switch_page("pages/exportacao.py")
 
     with col2:
@@ -98,7 +99,7 @@ def main():
             """,
             unsafe_allow_html=True
         )
-        if st.button("Acessar Importações 📥", key="imp_btn", use_container_width=True):
+        if st.button("Acessar Importações 📥", key="imp_main_btn", use_container_width=True):
             st.switch_page("pages/importacao.py")
 
     with col3:
@@ -111,7 +112,7 @@ def main():
             """,
             unsafe_allow_html=True
         )
-        if st.button("Acessar Cabotagem 🚢", key="cab_btn", use_container_width=True):
+        if st.button("Acessar Cabotagem 🚢", key="cab_main_btn", use_container_width=True):
             st.switch_page("pages/cabotagem.py")
 
     st.markdown(

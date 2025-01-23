@@ -1,10 +1,6 @@
 import streamlit as st
-import pandas as pd
-from datetime import datetime
-import requests
-from io import BytesIO
-from style import apply_styles, render_sidebar
 
+# Configuração da página DEVE ser a primeira chamada Streamlit
 st.set_page_config(
     page_title="Previsão de Chegadas",
     layout="wide",
@@ -12,8 +8,24 @@ st.set_page_config(
     page_icon="📦",
 )
 
+# Importações que usam st só depois do set_page_config
+import pandas as pd
+from datetime import datetime
+import requests
+from io import BytesIO
+from style import apply_styles
+
 apply_styles()
-render_sidebar()
+
+# Sidebar navigation
+if st.sidebar.button("🏠 Home", key="home_btn", use_container_width=True):
+    st.switch_page("Home.py")
+if st.sidebar.button("🚢 Cabotagem", key="cab_side_btn", use_container_width=True):
+    st.switch_page("pages/cabotagem.py")
+if st.sidebar.button("📦 Exportação", key="exp_side_btn", use_container_width=True):
+    st.switch_page("pages/exportacao.py")
+if st.sidebar.button("📥 Importação", key="imp_side_btn", use_container_width=True):
+    st.switch_page("pages/importacao.py")
 
 @st.cache_data(ttl=3600)
 def load_and_process_data():
