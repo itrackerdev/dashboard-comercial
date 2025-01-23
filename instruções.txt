@@ -25,3 +25,9 @@ nome consig e nome remetente
 Informar em cada pagina o range de periodo de datas utilizado como filtro
 
 aplicar filtro com nome 
+
+
+
+exportação - porto de EMBARQUE POL
+
+importacao - porto de descarga POD

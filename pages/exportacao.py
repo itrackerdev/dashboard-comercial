@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import datetime
 import requests
 from io import BytesIO
-from style import apply_styles
+from style import apply_styles, render_sidebar
 
 st.set_page_config(
     page_title="Previsão de Chegadas",
@@ -13,6 +13,7 @@ st.set_page_config(
 )
 
 apply_styles()
+render_sidebar()
 
 @st.cache_data(ttl=3600)
 def load_and_process_data():

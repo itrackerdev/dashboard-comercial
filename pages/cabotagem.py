@@ -5,7 +5,7 @@ import hashlib
 import os
 import requests
 from io import BytesIO
-from style import apply_styles
+from style import apply_styles, render_sidebar
 
 
 st.set_page_config(
@@ -14,6 +14,10 @@ st.set_page_config(
     initial_sidebar_state="expanded",
     page_icon="🚢"
 )
+
+apply_styles()
+render_sidebar()
+
 
 # Função para baixar arquivo do Google Drive
 def download_file_from_drive(file_id):
@@ -168,7 +172,7 @@ def get_formatted_dates(df):
         return []
 
 def main():
-    apply_styles()
+    
     st.markdown('<div class="main-container">', unsafe_allow_html=True)
     st.markdown('<h1 class="main-title">🚢 Análise de Operações de Cabotagem</h1>', unsafe_allow_html=True)
 
