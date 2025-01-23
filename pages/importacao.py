@@ -93,68 +93,60 @@ def display_filtered_details(df, data_selecionada, porto_descarga, uf_consignata
     st.dataframe(detalhes_tabela, use_container_width=True, hide_index=True)
 
 def main():
-    # Título principal
-    st.markdown('<h1 class="main-title">🚢 Previsão de Importações de Containers</h1>', unsafe_allow_html=True)
+   st.markdown('<h1 class="main-title">🚢 Previsão de Importações de Containers</h1>', unsafe_allow_html=True)
 
-    # Carregar os dados
-    if "dataframe" not in st.session_state:
-        st.session_state["dataframe"] = load_and_process_data()
-    df = st.session_state["dataframe"]
+   if "dataframe" not in st.session_state:
+       st.session_state["dataframe"] = load_and_process_data()
+   df = st.session_state["dataframe"]
 
-    # Verificar se os dados foram carregados
-    if df.empty:
-        st.warning("Nenhum dado disponível para exibição.")
-        return
+   if df.empty:
+       st.warning("Nenhum dado disponível para exibição.")
+       return
 
-    # Gerar a tabela de pivô
-    dados_pivot = df.groupby(['ETA', 'UF CONSIGNATÁRIO'])['QTDE CONTAINER'].sum().reset_index()
-    tabela_pivot = dados_pivot.pivot(
-        index='ETA', columns='UF CONSIGNATÁRIO', values='QTDE CONTAINER'
-    ).fillna(0)
+   dados_pivot = df.groupby(['ETA', 'UF CONSIGNATÁRIO'])['QTDE CONTAINER'].sum().reset_index()
+   tabela_pivot = dados_pivot.pivot(
+       index='ETA', columns='UF CONSIGNATÁRIO', values='QTDE CONTAINER'
+   ).fillna(0)
 
-    # Ordenar a tabela
-    tabela_pivot = tabela_pivot.sort_index(ascending=False)
-    tabela_pivot['TOTAL'] = tabela_pivot.sum(axis=1)
+   tabela_pivot = tabela_pivot.sort_index(ascending=False)
+   tabela_pivot['TOTAL'] = tabela_pivot.sum(axis=1)
 
-    # Calcular métricas
-    total_containers = int(tabela_pivot['TOTAL'].sum())
-    ultima_atualizacao = df['ETA'].max().strftime('%d/%m/%Y')
+   total_containers = int(tabela_pivot['TOTAL'].sum())
+   data_mais_antiga = df['ETA'].min().strftime('%d/%m/%Y')
+   data_mais_recente = df['ETA'].max().strftime('%d/%m/%Y')
+   range_datas = f"{data_mais_antiga} - {data_mais_recente}"
 
-    # Cards de métricas
-    col1, col2 = st.columns(2)
-    with col1:
-        st.metric("TOTAL DE CONTAINERS", f"{total_containers:,}", help="Total de containers no período")
-    with col2:
-        st.metric("ÚLTIMA ATUALIZAÇÃO", ultima_atualizacao, help="Data da última chegada registrada")
+   col1, col2 = st.columns(2)
+   with col1:
+       st.metric("TOTAL DE CONTAINERS", f"{total_containers:,}", help="Total de containers no período")
+   with col2:
+       st.metric("PERÍODO DOS DADOS", range_datas, help="Intervalo de datas dos dados disponíveis")
 
-    # Filtros
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        data_mais_antiga = tabela_pivot.index.min()
-        data_mais_recente = tabela_pivot.index.max()
-        data_selecionada = st.date_input(
-            "Data de Chegada",
-            min_value=data_mais_antiga,
-            max_value=data_mais_recente,
-            value=data_mais_recente,
-            key="data_chegada"
-        )
-    with col2:
-        portos_descarga = df['PORTO DESCARGA'].unique()
-        porto_descarga = st.selectbox("Porto de Descarga", options=portos_descarga)
-    with col3:
-        ufs_consignatario = df['UF CONSIGNATÁRIO'].unique()
-        uf_consignatario = st.selectbox("UF Consignatário", options=ufs_consignatario)
+   col1, col2, col3 = st.columns(3)
+   with col1:
+       data_mais_antiga_dt = tabela_pivot.index.min()
+       data_mais_recente_dt = tabela_pivot.index.max()
+       data_selecionada = st.date_input(
+           "Data de Chegada",
+           min_value=data_mais_antiga_dt,
+           max_value=data_mais_recente_dt,
+           value=data_mais_recente_dt,
+           key="data_chegada"
+       )
+   with col2:
+       portos_descarga = sorted(df['PORTO DESCARGA'].unique())
+       porto_descarga = st.selectbox("Porto de Descarga", options=portos_descarga)
+   with col3:
+       ufs_consignatario = sorted(df['UF CONSIGNATÁRIO'].unique())
+       uf_consignatario = st.selectbox("UF Consignatário", options=ufs_consignatario)
 
-    # Exibir a tabela principal
-    st.markdown('<h3 class="subheader">Previsão de Chegadas por Estado</h3>', unsafe_allow_html=True)
-    tabela_formatada = tabela_pivot.copy().reset_index()
-    tabela_formatada['ETA'] = tabela_formatada['ETA'].dt.strftime('%d/%m/%Y')
-    st.dataframe(tabela_formatada, use_container_width=True, hide_index=True)   
+   st.markdown('<h3 class="subheader">Previsão de Chegadas por Estado</h3>', unsafe_allow_html=True)
+   tabela_formatada = tabela_pivot.copy().reset_index()
+   tabela_formatada['ETA'] = tabela_formatada['ETA'].dt.strftime('%d/%m/%Y')
+   st.dataframe(tabela_formatada, use_container_width=True, hide_index=True)   
 
-    # Exibir os detalhes filtrados
-    if data_selecionada and porto_descarga and uf_consignatario:
-        display_filtered_details(df, data_selecionada, porto_descarga, uf_consignatario)
+   if data_selecionada and porto_descarga and uf_consignatario:
+       display_filtered_details(df, data_selecionada, porto_descarga, uf_consignatario)
 
 if __name__ == "__main__":
     main()
