@@ -51,8 +51,8 @@ def display_filtered_details(df, data_selecionada, porto_embarque, estado_export
     
     detalhes = df[
         (df_dates == selected_date) &
-        (df['PORTO EMBARQUE'] == porto_embarque) &
-        (df['ESTADO EXPORTADOR'] == estado_exportador)
+        (df['ESTADO EXPORTADOR'] == estado_exportador)&
+        (df['PORTO EMBARQUE'] == porto_embarque) 
     ]
 
     if detalhes.empty:
@@ -121,11 +121,11 @@ def main():
             key="data_embarque"
         )
     with col2:
-        portos_embarque = sorted(df['PORTO EMBARQUE'].unique())
-        porto_embarque = st.selectbox("Porto de Embarque", options=portos_embarque)
-    with col3:
         estados_exportador = sorted(df['ESTADO EXPORTADOR'].unique())
         estado_exportador = st.selectbox("Estado Exportador", options=estados_exportador)
+    with col3:
+        portos_embarque = sorted(df['PORTO EMBARQUE'].unique())
+        porto_embarque = st.selectbox("Porto de Embarque", options=portos_embarque)
 
     st.markdown('<h3 class="subheader">Previsão de Embarques por Estado</h3>', unsafe_allow_html=True)
     tabela_formatada = tabela_pivot.copy().reset_index()

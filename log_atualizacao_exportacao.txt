@@ -1,17 +1,25 @@
-2025-01-21 09:49:16.248585 - Registros processados: 4175, Registros únicos após processamento: 2339
-2025-01-21 10:03:12.947563 - Registros processados: 4333, Registros únicos após processamento: 3693
-2025-01-21 10:03:45.889071 - Registros processados: 4333, Registros únicos após processamento: 3693
-2025-01-21 10:13:53.535522 - Registros processados: 4333, Registros únicos após processamento: 3693
-2025-01-21 10:22:25.226254 - Registros processados: 4333, Registros únicos após processamento: 3693
-2025-01-21 10:49:48.914532 - Registros processados: 4333, Registros únicos após processamento: 3693
-2025-01-21 10:50:35.066646 - Registros processados: 4333, Registros únicos após processamento: 3693
-2025-01-21 10:51:03.864819 - Registros processados: 4333, Registros únicos após processamento: 3693
-2025-01-21 10:51:06.911577 - Registros processados: 4333, Registros únicos após processamento: 3693
-2025-01-21 10:51:10.608353 - Registros processados: 4333, Registros únicos após processamento: 3693
-2025-01-21 10:51:10.905514 - Registros processados: 4333, Registros únicos após processamento: 3693
-2025-01-21 10:51:49.366799 - Registros processados: 4333, Registros únicos após processamento: 3693
-2025-01-21 11:25:15.504560 - Registros processados: 4333, Registros únicos após processamento: 3693
-2025-01-21 12:10:48.316684 - Registros processados: 4333, Registros únicos após processamento: 3693
-2025-01-21 14:28:56.937662 - Registros processados: 4333, Registros únicos após processamento: 3693
-2025-01-22 10:04:03.954129 - Registros processados: 4333, Registros únicos após processamento: 3693
-2025-01-22 10:14:49.300912 - Registros processados: 4333, Registros únicos após processamento: 3693
+2025-01-21 09:49:16.248585 - Registros processados: 4175, Registros ï¿½nicos apï¿½s processamento: 2339
+2025-01-21 10:03:12.947563 - Registros processados: 4333, Registros ï¿½nicos apï¿½s processamento: 3693
+2025-01-21 10:03:45.889071 - Registros processados: 4333, Registros ï¿½nicos apï¿½s processamento: 3693
+2025-01-21 10:13:53.535522 - Registros processados: 4333, Registros ï¿½nicos apï¿½s processamento: 3693
+2025-01-21 10:22:25.226254 - Registros processados: 4333, Registros ï¿½nicos apï¿½s processamento: 3693
+2025-01-21 10:49:48.914532 - Registros processados: 4333, Registros ï¿½nicos apï¿½s processamento: 3693
+2025-01-21 10:50:35.066646 - Registros processados: 4333, Registros ï¿½nicos apï¿½s processamento: 3693
+2025-01-21 10:51:03.864819 - Registros processados: 4333, Registros ï¿½nicos apï¿½s processamento: 3693
+2025-01-21 10:51:06.911577 - Registros processados: 4333, Registros ï¿½nicos apï¿½s processamento: 3693
+2025-01-21 10:51:10.608353 - Registros processados: 4333, Registros ï¿½nicos apï¿½s processamento: 3693
+2025-01-21 10:51:10.905514 - Registros processados: 4333, Registros ï¿½nicos apï¿½s processamento: 3693
+2025-01-21 10:51:49.366799 - Registros processados: 4333, Registros ï¿½nicos apï¿½s processamento: 3693
+2025-01-21 11:25:15.504560 - Registros processados: 4333, Registros ï¿½nicos apï¿½s processamento: 3693
+2025-01-21 12:10:48.316684 - Registros processados: 4333, Registros ï¿½nicos apï¿½s processamento: 3693
+2025-01-21 14:28:56.937662 - Registros processados: 4333, Registros ï¿½nicos apï¿½s processamento: 3693
+2025-01-22 10:04:03.954129 - Registros processados: 4333, Registros ï¿½nicos apï¿½s processamento: 3693
+2025-01-22 10:14:49.300912 - Registros processados: 4333, Registros ï¿½nicos apï¿½s processamento: 3693
+
+
+
+cards = [
+        (col1, "ðŸ“¦ ExportaÃ§Ãµes", total_exportacao, "exp"),
+        (col2, "ðŸ“¥ ImportaÃ§Ãµes", total_importacao, "imp"),
+        (col3, "ðŸš¢ Cabotagem", 19217, "cab")
+    ]
