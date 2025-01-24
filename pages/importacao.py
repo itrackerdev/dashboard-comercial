@@ -110,7 +110,7 @@ def display_filtered_details(df, filters):
         'NOME EXPORTADOR': 'nome_exportador',
         'ARMADOR': 'armador',
         'AGENTE INTERNACIONAL': 'agente_internacional',
-        'NOME IMPORTADOR': 'nome_importador'  # Remover esta linha se a coluna não existir
+        'NOME EXPORTADOR': 'nome_exportador'  # Remover esta linha se a coluna não existir
     }
 
     # Aplicar filtros somente em colunas existentes
