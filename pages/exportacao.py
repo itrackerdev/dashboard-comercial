@@ -45,7 +45,7 @@ def load_and_process_data():
         
         df['DATA EMBARQUE'] = pd.to_datetime(df['DATA EMBARQUE'], errors='coerce')
         df['QTDE CONTEINER'] = pd.to_numeric(
-            df['QTDE CONTEINER'].str.replace(',', '.'), errors='coerce'
+            df['QTDE CONTEINER'].astype(str).str.replace(',', '.'), errors='coerce'
         ).fillna(0)
         
         df = df.dropna(subset=['DATA EMBARQUE', 'ESTADO EXPORTADOR', 'PORTO EMBARQUE'])
@@ -90,6 +90,13 @@ def display_filtered_details(df, data_inicial, data_final, filtros):
 
     st.dataframe(detalhes_tabela, use_container_width=True, hide_index=True)
 
+def create_dropdown(label, df_column, key):
+    if df_column is None:
+        return "Todos"
+    options = df_column.dropna().unique().tolist()
+    options = [str(opt) for opt in options]
+    return st.selectbox(label, ['Todos'] + sorted(options), key=key)
+
 def main():
     st.markdown('<h1 class="main-title">🚢 Previsão de Exportações de Containers</h1>', unsafe_allow_html=True)
 
@@ -113,7 +120,7 @@ def main():
     with col2:
         st.metric("PERÍODO DOS DADOS", range_datas, help="Intervalo de datas dos dados disponíveis")
 
-    # Filtros
+    # Filtros principais
     st.markdown('<h3 class="subheader">Filtros</h3>', unsafe_allow_html=True)
     
     col1, col2 = st.columns(2)
@@ -136,29 +143,44 @@ def main():
             key="data_final"
         )
 
+    # Filtros Primários
     col1, col2, col3 = st.columns(3)
     with col1:
-        estados = ["Todos"] + sorted(df['ESTADO EXPORTADOR'].unique().tolist())
-        estado_selecionado = st.selectbox("Estado Exportador", options=estados)
-    
+        estado_selecionado = create_dropdown("Estado Exportador", df.get('ESTADO EXPORTADOR'), "estado")
     with col2:
-        portos = ["Todos"] + sorted(df['PORTO EMBARQUE'].unique().tolist())
-        porto_selecionado = st.selectbox("Porto de Embarque", options=portos)
-    
+        porto_selecionado = create_dropdown("Porto de Embarque", df.get('PORTO EMBARQUE'), "porto")
     with col3:
-        armadores = ["Todos"] + sorted(df['ARMADOR'].unique().tolist())
-        armador_selecionado = st.selectbox("Armador", options=armadores)
+        armador_selecionado = create_dropdown("Armador", df.get('ARMADOR'), "armador")
 
-    # Tabela pivot
-    df_filtrado = df.copy()
+    # Filtros Secundários
+    with st.expander("Filtros Adicionais", expanded=False):
+        col4, col5, col6 = st.columns(3)
+        with col4:
+            nome_exportador_selecionado = create_dropdown("Nome Exportador", df.get('NOME EXPORTADOR'), "nome_exportador")
+        with col5:
+            cidade_exportador_selecionada = create_dropdown("Cidade Exportador", df.get('CIDADE EXPORTADOR'), "cidade_exportador")
+        with col6:
+            consignatario_selecionado = create_dropdown("Consignatário", df.get('CONSIGNATÁRIO'), "consignatario")
+
+        col7 = st.columns(1)
+        with col7[0]:
+            cnpj_selecionado = create_dropdown("CNPJ Exportador", df.get('CNPJ EXPORTADOR'), "cnpj_exportador")
 
     # Aplicar filtros
-    if estado_selecionado != "Todos":
-        df_filtrado = df_filtrado[df_filtrado['ESTADO EXPORTADOR'] == estado_selecionado]
-    if porto_selecionado != "Todos":
-        df_filtrado = df_filtrado[df_filtrado['PORTO EMBARQUE'] == porto_selecionado]
-    if armador_selecionado != "Todos":
-        df_filtrado = df_filtrado[df_filtrado['ARMADOR'] == armador_selecionado]
+    filtros = {
+        'ESTADO EXPORTADOR': estado_selecionado,
+        'PORTO EMBARQUE': porto_selecionado,
+        'ARMADOR': armador_selecionado,
+        'NOME EXPORTADOR': nome_exportador_selecionado,
+        'CIDADE EXPORTADOR': cidade_exportador_selecionada,
+        'CONSIGNATÁRIO': consignatario_selecionado,
+        'CNPJ EXPORTADOR': cnpj_selecionado
+    }
+
+    df_filtrado = df.copy()
+    for coluna, valor in filtros.items():
+        if valor != "Todos":
+            df_filtrado = df_filtrado[df_filtrado[coluna] == valor]
 
     # Filtrar por intervalo de datas
     df_filtrado = df_filtrado[
@@ -168,8 +190,6 @@ def main():
 
     # Agrupamento e criação de dados para a tabela pivot
     dados_pivot = df_filtrado.groupby(['DATA EMBARQUE', 'ESTADO EXPORTADOR', 'PORTO EMBARQUE'])['QTDE CONTEINER'].sum().reset_index()
-
-    # Criar a tabela pivot com índices, colunas combinadas e valores
     tabela_pivot = dados_pivot.pivot_table(
         index='DATA EMBARQUE',
         columns=['ESTADO EXPORTADOR', 'PORTO EMBARQUE'],
@@ -177,23 +197,17 @@ def main():
         aggfunc='sum'
     ).fillna(0)
 
-    # Ordenar e adicionar a coluna TOTAL
     tabela_pivot = tabela_pivot.sort_index(ascending=False)
     tabela_pivot['TOTAL'] = tabela_pivot.sum(axis=1)
 
-    # Exibir no Streamlit
     st.markdown('<h3 class="subheader">Previsão de Embarques por Estado e Porto</h3>', unsafe_allow_html=True)
     tabela_formatada = tabela_pivot.copy().reset_index()
     tabela_formatada['DATA EMBARQUE'] = tabela_formatada['DATA EMBARQUE'].dt.strftime('%d/%m/%Y')
     st.dataframe(tabela_formatada, use_container_width=True, hide_index=True)
 
     # Detalhes dos containers
-    filtros = {
-        'ESTADO EXPORTADOR': estado_selecionado,
-        'PORTO EMBARQUE': porto_selecionado,
-        'ARMADOR': armador_selecionado
-    }
-    display_filtered_details(df, data_inicial, data_final, filtros)
+    display_filtered_details(df_filtrado, data_inicial, data_final, filtros)
+
 
 if __name__ == "__main__":
     main()
