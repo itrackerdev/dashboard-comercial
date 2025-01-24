@@ -1,10 +1,6 @@
 import streamlit as st
-import pandas as pd
-from datetime import datetime
-import requests
-from io import BytesIO
-from style import apply_styles
 
+# O comando set_page_config precisa ser chamado como o primeiro comando Streamlit
 st.set_page_config(
     page_title="Previsão de Chegadas",
     layout="wide",
@@ -12,6 +8,14 @@ st.set_page_config(
     page_icon="📦",
 )
 
+# Importações restantes e funções de estilo
+import pandas as pd
+from datetime import datetime
+import requests
+from io import BytesIO
+from style import apply_styles
+
+# Aplicação de estilos vem depois da configuração inicial
 apply_styles()
 
 # Sidebar navigation
@@ -71,6 +75,25 @@ def load_and_process_data():
     except Exception as e:
         st.error(f"Erro ao carregar os dados: {str(e)}")
         return pd.DataFrame()
+    
+def calcular_total_importacao():
+    try:
+        file_id = st.secrets["urls"]["planilha_importacao"]
+        url = f"https://drive.google.com/uc?id={file_id}"
+        
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        excel_content = BytesIO(response.content)
+        
+        df = pd.read_excel(excel_content)
+        df['QTDE CONTAINER'] = pd.to_numeric(
+            df['QTDE CONTAINER'].str.replace(',', '.'), errors='coerce'
+        ).fillna(0)
+        
+        return int(df['QTDE CONTAINER'].sum())
+    except Exception as e:
+        st.error(f"Erro ao calcular total de importação: {e}")
+        return 0
 
 def display_filtered_details(df, data_inicial, data_final, filtros):
     detalhes = df.copy()

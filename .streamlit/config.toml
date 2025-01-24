@@ -1,3 +1,6 @@
+[server]
+layout = "wide"
+
 [browser]
 gatherUsageStats = false
 

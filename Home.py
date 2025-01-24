@@ -15,12 +15,30 @@ from PIL import Image
 import requests
 from io import BytesIO
 from style import apply_styles
+from pages.importacao import calcular_total_importacao
+from pages.exportacao import calcular_total_exportacao
 
 apply_styles()
 
 # Carregar configurações
 with open('config.json', 'r', encoding='utf-8') as f:
     config = json.load(f)
+
+def calcular_total_cabotagem():
+    try:
+        file_id = st.secrets["urls"]["planilha_cabotagem"]
+        url = f"https://docs.google.com/spreadsheets/d/{file_id}/export?format=xlsx"
+        response = requests.get(url)
+        df = pd.read_excel(BytesIO(response.content), dtype=str)
+        
+        df['QUANTIDADE C20'] = pd.to_numeric(df['QUANTIDADE C20'].str.replace(',', '.'), errors='coerce').fillna(0)
+        df['QUANTIDADE C40'] = pd.to_numeric(df['QUANTIDADE C40'].str.replace(',', '.'), errors='coerce').fillna(0)
+        
+        return int(df['QUANTIDADE C20'].sum() + df['QUANTIDADE C40'].sum())
+
+    except Exception as e:
+        st.error(f"Erro ao calcular total de cabotagem: {e}")
+        return 0
 
 def carregar_logo():
     try:
@@ -52,7 +70,7 @@ def main():
     # Logo centralizada
     logo = carregar_logo()
     if logo:
-        col1, col2, col3 = st.columns([2,1,2])
+        col1, col2, col3 = st.columns([2, 1, 2])
         with col2:
             st.image(logo, width=200)
 
@@ -73,15 +91,34 @@ def main():
     st.markdown("<h2>Bem-vindo ao Sistema de Análise de Cargas</h2>", unsafe_allow_html=True)
     st.divider()
 
+    # Calcular totais dinamicamente
+    try:
+        total_exportacao = calcular_total_exportacao()
+    except Exception as e:
+        total_exportacao = "Erro"
+        st.error(f"Erro ao carregar total de exportações: {e}")
+
+    try:
+        total_importacao = calcular_total_importacao()
+    except Exception as e:
+        total_importacao = "Erro"
+        st.error(f"Erro ao carregar total de importações: {e}")
+
+    try:
+        total_cabotagem = calcular_total_cabotagem()
+    except Exception as e:
+        total_cabotagem = "Erro"
+        st.error(f"Erro ao carregar total de cabotagem: {e}")
+
     # Indicadores clicáveis
     col1, col2, col3 = st.columns(3)
 
     with col1:
         st.markdown(
-            """
+            f"""
             <div class="indicador">
                 <h3>📦 Exportações</h3>
-                <p>4.214</p>
+                <p>{total_exportacao}</p>
             </div>
             """,
             unsafe_allow_html=True
@@ -91,10 +128,10 @@ def main():
 
     with col2:
         st.markdown(
-            """
+            f"""
             <div class="indicador">
                 <h3>📥 Importações</h3>
-                <p>14.987</p>
+                <p>{total_importacao}</p>
             </div>
             """,
             unsafe_allow_html=True
@@ -104,10 +141,10 @@ def main():
 
     with col3:
         st.markdown(
-            """
+            f"""
             <div class="indicador">
                 <h3>🚢 Cabotagem</h3>
-                <p>19.217</p>
+                <p>{total_cabotagem}</p>
             </div>
             """,
             unsafe_allow_html=True

@@ -1,6 +1,6 @@
 import streamlit as st
 
-# Configuração da página DEVE ser a primeira chamada Streamlit
+# O comando set_page_config precisa ser chamado como o primeiro comando Streamlit
 st.set_page_config(
     page_title="Previsão de Chegadas",
     layout="wide",
@@ -8,7 +8,7 @@ st.set_page_config(
     page_icon="📦",
 )
 
-# Importações que usam st só depois do set_page_config
+# Importações restantes e funções de estilo
 import pandas as pd
 from datetime import datetime
 import hashlib
@@ -28,6 +28,7 @@ if st.sidebar.button("📦 Exportação", key="exp_side_btn", use_container_widt
     st.switch_page("pages/exportacao.py")
 if st.sidebar.button("📥 Importação", key="imp_side_btn", use_container_width=True):
     st.switch_page("pages/importacao.py")
+
 
 
 # Função para baixar arquivo do Google Drive
@@ -95,24 +96,20 @@ def create_unique_id_safe(row):
 # Função para carregar e processar dados
 def load_and_process_data():
     try:
-        url = "https://docs.google.com/spreadsheets/d/1kvjmYigg06aEOrgFG4gRFwzCIjTrns2P/export?format=xlsx"
+        file_id = st.secrets["urls"]["planilha_cabotagem"]
+        url = f"https://docs.google.com/spreadsheets/d/{file_id}/export?format=xlsx"
         response = requests.get(url)
         response.raise_for_status()
         df = pd.read_excel(BytesIO(response.content), dtype=str)
 
-        # Conversão de data
         df['DATA DE EMBARQUE'] = pd.to_datetime(
             df['DATA DE EMBARQUE'], format='%Y-%m-%d', errors='coerce', dayfirst=True
         )
 
-        # Corrigir formato de números com vírgula e calcular quantidade total de contêineres
         for col in ['QUANTIDADE C20', 'QUANTIDADE C40']:
             df[col] = pd.to_numeric(df[col].str.replace(',', '.'), errors='coerce').fillna(0)
 
-        # Adicionar coluna para quantidade total de contêineres
         df['QUANTIDADE TOTAL'] = df['QUANTIDADE C20'] + df['QUANTIDADE C40']
-
-        # Criar coluna ID_UNICO
         df['ID_UNICO'] = df.apply(lambda row: create_unique_id_safe(row), axis=1)
 
         return df
@@ -120,6 +117,26 @@ def load_and_process_data():
     except Exception as e:
         st.error(f"Erro ao carregar dados: {e}")
         return pd.DataFrame()
+
+def calcular_total_cabotagem():
+    try:
+        file_id = st.secrets["urls"]["planilha_cabotagem"]
+        url = f"https://docs.google.com/spreadsheets/d/{file_id}/export?format=xlsx"
+        response = requests.get(url)
+        response.raise_for_status()
+        df = pd.read_excel(BytesIO(response.content), dtype=str)
+
+        # Convert container quantities
+        df['QUANTIDADE C20'] = pd.to_numeric(df['QUANTIDADE C20'].str.replace(',', '.'), errors='coerce').fillna(0)
+        df['QUANTIDADE C40'] = pd.to_numeric(df['QUANTIDADE C40'].str.replace(',', '.'), errors='coerce').fillna(0)
+        
+        # Simple sum of C20 and C40
+        total_containers = int(df['QUANTIDADE C20'].sum() + df['QUANTIDADE C40'].sum())
+        return total_containers
+
+    except Exception as e:
+        st.error(f"Erro ao calcular total de cabotagem: {e}")
+        return 0
 
 # Função para retornar informações por estado
 def get_estado_info(df, data, uf):
@@ -183,7 +200,6 @@ def get_formatted_dates(df):
         return []
 
 def main():
-    
     st.markdown('<div class="main-container">', unsafe_allow_html=True)
     st.markdown('<h1 class="main-title">🚢 Análise de Operações de Cabotagem</h1>', unsafe_allow_html=True)
 
@@ -198,7 +214,8 @@ def main():
     # Métricas principais
     col1, col2 = st.columns(2)
     with col1:
-        st.metric("Total de Registros", f"{len(df):,}", help="Quantidade total de registros processados.")
+        total_containers = int(df['QUANTIDADE C20'].sum() + df['QUANTIDADE C40'].sum())
+        st.metric("Total de Containers", f"{total_containers:,}", help="Quantidade total de containers (C20 + C40)")
     with col2:
         ultima_atualizacao = format_date_safe(df['DATA DE EMBARQUE'].max())
         st.metric("Última Atualização", ultima_atualizacao, help="Data mais recente nos dados.")
