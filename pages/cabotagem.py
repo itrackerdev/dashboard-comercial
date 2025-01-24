@@ -1,12 +1,6 @@
 import streamlit as st
 
-# O comando set_page_config precisa ser chamado como o primeiro comando Streamlit
-st.set_page_config(
-    page_title="Previsão de Chegadas",
-    layout="wide",
-    initial_sidebar_state="expanded",
-    page_icon="📦",
-)
+
 
 # Importações restantes e funções de estilo
 import pandas as pd
