@@ -20,7 +20,7 @@ apply_styles()
 # Sidebar navigation
 if st.sidebar.button("🏠 Home", key="home_btn", use_container_width=True):
     st.switch_page("Home.py")
-if st.sidebar.button("🚢 Cabotagem", key="cab_side_btn", use_container_width=True):
+if st.sidebar.button("📢 Cabotagem", key="cab_side_btn", use_container_width=True):
     st.switch_page("pages/cabotagem.py")
 if st.sidebar.button("📦 Exportação", key="exp_side_btn", use_container_width=True):
     st.switch_page("pages/exportacao.py")
@@ -33,12 +33,26 @@ def create_dropdown(label, df_column, key):
     options = [str(opt) for opt in options]
     return st.selectbox(label, ['Todos'] + sorted(options), key=key)
 
+def format_dates(df, date_columns):
+    """Formata as colunas de data para o padrão brasileiro."""
+    for col in date_columns:
+        if col not in df.columns:
+            st.warning(f"A coluna {col} não existe no dataframe.")
+            continue
+        try:
+            df[col] = pd.to_datetime(df[col], errors='coerce', dayfirst=True)
+            df[col] = df[col].dt.strftime('%d/%m/%Y')  # Converte para o formato brasileiro
+        except Exception as e:
+            st.warning(f"Erro ao formatar a coluna {col}: {e}")
+    return df
+
+
 @st.cache_data(ttl=3600)
 def load_and_process_data():
     try:
         file_id = st.secrets["urls"]["planilha_importacao"]
         url = f"https://drive.google.com/uc?id={file_id}"
-        
+
         response = requests.get(url, timeout=10)
         response.raise_for_status()
         excel_content = BytesIO(response.content)
@@ -49,14 +63,21 @@ def load_and_process_data():
             'ETA', 'UF CONSIGNATÁRIO', 'QTDE CONTAINER', 
             'PORTO DESCARGA', 'CONSIGNATARIO FINAL', 'CONSOLIDADOR',
             'CONSIGNATÁRIO', 'TERMINAL DESCARGA', 'NOME EXPORTADOR',
-            'ARMADOR', 'AGENTE INTERNACIONAL', 'NOME IMPORTADOR',
-            'NAVIO', 'PAÍS ORIGEM', 'PORTO ORIGEM'
+            'ARMADOR', 'AGENTE INTERNACIONAL', 'NAVIO', 
+            'PAÍS ORIGEM', 'PORTO ORIGEM'
         ]
+
+        missing_columns = [col for col in selected_columns if col not in df.columns]
+        if missing_columns:
+            st.error(f"Colunas ausentes no arquivo: {', '.join(missing_columns)}")
+            return pd.DataFrame()
+
         df = df[selected_columns]
 
-        df['ETA'] = pd.to_datetime(df['ETA'], errors='coerce', dayfirst=True)
+        df = format_dates(df, ['ETA'])
+
         df['QTDE CONTAINER'] = pd.to_numeric(
-            df['QTDE CONTAINER'].str.replace(',', '.'), errors='coerce'
+            df['QTDE CONTAINER'].astype(str).str.replace(',', '.'), errors='coerce'
         ).fillna(0)
 
         df = df.dropna(subset=['ETA', 'UF CONSIGNATÁRIO', 'PORTO DESCARGA'])
@@ -67,14 +88,20 @@ def load_and_process_data():
         return pd.DataFrame()
 
 def display_filtered_details(df, filters):
-    mask = (df['ETA'].dt.date >= filters['data_inicio']) & \
-           (df['ETA'].dt.date <= filters['data_fim'])
-    
+    # Certificar que as datas em 'ETA' e os filtros estão no mesmo formato (datetime)
+    df['ETA'] = pd.to_datetime(df['ETA'], format='%d/%m/%Y', errors='coerce')
+    filters['data_inicio'] = pd.to_datetime(filters['data_inicio'])
+    filters['data_fim'] = pd.to_datetime(filters['data_fim'])
+
+    # Criar a máscara de filtragem
+    mask = (df['ETA'] >= filters['data_inicio']) & (df['ETA'] <= filters['data_fim'])
+
     if filters['porto_descarga'] != 'Todos':
         mask &= (df['PORTO DESCARGA'] == filters['porto_descarga'])
     if filters['uf_consignatario'] != 'Todos':
         mask &= (df['UF CONSIGNATÁRIO'] == filters['uf_consignatario'])
-    
+
+    # Lista de colunas para aplicar filtros
     filter_columns = {
         'CONSIGNATARIO FINAL': 'consignatario_final',
         'CONSOLIDADOR': 'consolidador',
@@ -83,27 +110,31 @@ def display_filtered_details(df, filters):
         'NOME EXPORTADOR': 'nome_exportador',
         'ARMADOR': 'armador',
         'AGENTE INTERNACIONAL': 'agente_internacional',
-        'NOME IMPORTADOR': 'nome_importador'
+        'NOME IMPORTADOR': 'nome_importador'  # Remover esta linha se a coluna não existir
     }
-    
+
+    # Aplicar filtros somente em colunas existentes
     for col, filter_key in filter_columns.items():
-        if filters[filter_key] != 'Todos':
+        if col in df.columns and filters.get(filter_key, 'Todos') != 'Todos':
             mask &= (df[col] == filters[filter_key])
-    
+
     detalhes = df[mask]
-    
+
     if detalhes.empty:
         st.warning(f"Nenhum dado encontrado para os filtros selecionados no período de {filters['data_inicio'].strftime('%d/%m/%Y')} a {filters['data_fim'].strftime('%d/%m/%Y')}.")
         return
 
     st.markdown('<h3 class="subheader">Detalhes dos Containers</h3>', unsafe_allow_html=True)
-    
+
     colunas_exibicao = [
-        'CONSIGNATARIO FINAL', 'CONSOLIDADOR', 'CONSIGNATÁRIO', 
+        'CONSIGNATARIO FINAL', 'CONSOLIDADOR', 'CONSIGNATÁRIO',
         'TERMINAL DESCARGA', 'NOME EXPORTADOR', 'ARMADOR',
         'AGENTE INTERNACIONAL', 'NOME IMPORTADOR', 'QTDE CONTAINER'
     ]
-    
+
+    # Exibir somente colunas existentes
+    colunas_exibicao = [col for col in colunas_exibicao if col in df.columns]
+
     detalhes_tabela = detalhes[colunas_exibicao].copy()
     detalhes_tabela['QTDE CONTAINER'] = detalhes_tabela['QTDE CONTAINER'].apply(
         lambda x: f"{int(x):,}" if x > 0 else "-"
@@ -112,7 +143,7 @@ def display_filtered_details(df, filters):
     st.dataframe(detalhes_tabela, use_container_width=True, hide_index=True)
 
 def main():
-    st.markdown('<h1 class="main-title">🚢 Previsão de Importações de Containers</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 class="main-title">📢 Previsão de Importações de Containers</h1>', unsafe_allow_html=True)
 
     if "dataframe" not in st.session_state:
         st.session_state["dataframe"] = load_and_process_data()
@@ -131,14 +162,14 @@ def main():
     ).fillna(0)
 
     tabela_pivot = tabela_pivot.sort_index(ascending=False)
-    
+
     # Adicionar total
     totais_por_linha = tabela_pivot.sum(axis=1)
     tabela_pivot['TOTAL'] = totais_por_linha
 
     total_containers = int(tabela_pivot['TOTAL'].sum())
-    data_mais_antiga = df['ETA'].min().strftime('%d/%m/%Y')
-    data_mais_recente = df['ETA'].max().strftime('%d/%m/%Y')
+    data_mais_antiga = pd.to_datetime(df['ETA'], format='%d/%m/%Y').min().strftime('%d/%m/%Y')
+    data_mais_recente = pd.to_datetime(df['ETA'], format='%d/%m/%Y').max().strftime('%d/%m/%Y')
     range_datas = f"{data_mais_antiga} - {data_mais_recente}"
 
     col1, col2 = st.columns(2)
@@ -149,8 +180,13 @@ def main():
 
     col1, col2, col3 = st.columns(3)
     with col1:
-        data_mais_antiga_dt = tabela_pivot.index.min()
-        data_mais_recente_dt = tabela_pivot.index.max()
+        # Garantir que as datas mínima e máxima sejam coerentes
+        data_mais_antiga_dt = min(pd.to_datetime(tabela_pivot.index.min(), format='%d/%m/%Y'), 
+                                  pd.to_datetime(tabela_pivot.index.max(), format='%d/%m/%Y'))
+        data_mais_recente_dt = max(pd.to_datetime(tabela_pivot.index.min(), format='%d/%m/%Y'), 
+                                   pd.to_datetime(tabela_pivot.index.max(), format='%d/%m/%Y'))
+
+        # Configurar o componente de seleção de período
         datas = st.date_input(
             "Período",
             [data_mais_recente_dt, data_mais_recente_dt],
@@ -161,12 +197,15 @@ def main():
             data_inicio, data_fim = datas
         else:
             data_inicio = data_fim = datas[0]
+
     with col2:
         portos_descarga = ['Todos'] + sorted(df['PORTO DESCARGA'].unique().tolist())
         porto_descarga = st.selectbox("Porto de Descarga", options=portos_descarga)
+
     with col3:
         ufs_consignatario = ['Todos'] + sorted(df['UF CONSIGNATÁRIO'].unique().tolist())
         uf_consignatario = st.selectbox("UF Consignatário", options=ufs_consignatario)
+
 
     # Segunda linha de filtros
     col4, col5, col6 = st.columns(3)
@@ -218,16 +257,10 @@ def main():
             df['AGENTE INTERNACIONAL'],
             "agente"
         )
-    with col11:
-        nome_importador = create_dropdown(
-            "Nome Importador",
-            df['NOME IMPORTADOR'],
-            "importador"
-        )
 
     st.markdown('<h3 class="subheader">Previsão de Chegadas por Estado</h3>', unsafe_allow_html=True)
     tabela_formatada = tabela_pivot.copy().reset_index()
-    tabela_formatada['ETA'] = tabela_formatada['ETA'].dt.strftime('%d/%m/%Y')
+    tabela_formatada['ETA'] = pd.to_datetime(tabela_formatada['ETA'], format='%d/%m/%Y').dt.strftime('%d/%m/%Y')
     st.dataframe(tabela_formatada, use_container_width=True, hide_index=True)
 
     filters = {
@@ -241,11 +274,10 @@ def main():
         'terminal_descarga': terminal_descarga,
         'nome_exportador': nome_exportador,
         'armador': armador,
-        'agente_internacional': agente_internacional,
-        'nome_importador': nome_importador
+        'agente_internacional': agente_internacional
     }
 
-    if all(filters.values()):
+    if any(filters.values()):
         display_filtered_details(df, filters)
 
 if __name__ == "__main__":
