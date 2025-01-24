@@ -180,16 +180,14 @@ def main():
 
     col1, col2, col3 = st.columns(3)
     with col1:
-        # Garantir que as datas mínima e máxima sejam coerentes
-        data_mais_antiga_dt = min(pd.to_datetime(tabela_pivot.index.min(), format='%d/%m/%Y'), 
-                                  pd.to_datetime(tabela_pivot.index.max(), format='%d/%m/%Y'))
-        data_mais_recente_dt = max(pd.to_datetime(tabela_pivot.index.min(), format='%d/%m/%Y'), 
-                                   pd.to_datetime(tabela_pivot.index.max(), format='%d/%m/%Y'))
+        # Garantir que datas mínima e máxima sejam coerentes com os dados disponíveis no DataFrame
+        data_mais_antiga_dt = pd.to_datetime(df['ETA'], format='%d/%m/%Y').min()
+        data_mais_recente_dt = pd.to_datetime(df['ETA'], format='%d/%m/%Y').max()
 
-        # Configurar o componente de seleção de período
+        # Configurar o componente de seleção de período com base nas datas reais do DataFrame
         datas = st.date_input(
             "Período",
-            [data_mais_recente_dt, data_mais_recente_dt],
+            [data_mais_antiga_dt, data_mais_recente_dt],
             min_value=data_mais_antiga_dt,
             max_value=data_mais_recente_dt,
         )
@@ -205,7 +203,6 @@ def main():
     with col3:
         ufs_consignatario = ['Todos'] + sorted(df['UF CONSIGNATÁRIO'].unique().tolist())
         uf_consignatario = st.selectbox("UF Consignatário", options=ufs_consignatario)
-
 
     # Segunda linha de filtros
     col4, col5, col6 = st.columns(3)
