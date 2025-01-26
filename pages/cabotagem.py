@@ -13,17 +13,22 @@ from style import apply_styles
 
 apply_styles()
 
-# Sidebar navigation
-if st.sidebar.button("🏠 Home", key="home_btn", use_container_width=True):
-    st.switch_page("Home.py")
-if st.sidebar.button("🚢 Cabotagem", key="cab_side_btn", use_container_width=True):
-    st.switch_page("pages/cabotagem.py")
-if st.sidebar.button("📦 Exportação", key="exp_side_btn", use_container_width=True):
-    st.switch_page("pages/exportacao.py")
-if st.sidebar.button("📥 Importação", key="imp_side_btn", use_container_width=True):
-    st.switch_page("pages/importacao.py")
+# No início do arquivo, após os imports
+navigation = [
+    {"icon": "🏠", "label": "Home", "page": "Home.py", "suffix": "home"},
+    {"icon": "🚢", "label": "Cabotagem", "page": "pages/cabotagem.py", "suffix": "cab"},
+    {"icon": "📦", "label": "Exportação", "page": "pages/exportacao.py", "suffix": "exp"},
+    {"icon": "📥", "label": "Importação", "page": "pages/importacao.py", "suffix": "imp"}
+]
 
-
+# Navegação na sidebar
+for nav in navigation:
+    if st.sidebar.button(
+        f"{nav['icon']} {nav['label']}", 
+        key=f"cab_nav_{nav['suffix']}", 
+        use_container_width=True
+    ):
+        st.switch_page(nav['page'])
 
 # Função para baixar arquivo do Google Drive
 def download_file_from_drive(file_id):
