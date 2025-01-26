@@ -65,11 +65,8 @@ def load_and_process_data():
             
     except Exception as e:
         st.error(str(e))
-        if st.button("Recarregar página"):
-            st.session_state.clear()
-            st.experimental_rerun()
+        st.experimental_rerun()
         return pd.DataFrame()
-
     
 def calcular_total_importacao():
     try:
@@ -133,10 +130,9 @@ def create_dropdown(label, df_column, key):
 def main():
    st.markdown('<h1 class="main-title">📢 Previsão de Importações de Containers</h1>', unsafe_allow_html=True)
 
-   if st.session_state.get("reload_trigger", False):
-        st.session_state.clear()  # Limpa o estado
-        st.experimental_rerun()
-
+   if st.session_state.get("_is_running", False):
+       st.warning("Carregamento em andamento...")
+       st.stop()
 
    st.session_state["_is_running"] = True
 
@@ -268,13 +264,10 @@ def main():
        display_filtered_details(df, data_inicial, data_final, filtros)
 
    except Exception as e:
-        st.error(f"Erro ao processar dados: {str(e)}")
-        st.warning("Por favor, clique no botão abaixo para recarregar a página e tentar novamente.")
-        if st.button("Recarregar página"):
-            st.session_state["reload_trigger"] = True  # Adiciona um gatilho
-            st.experimental_rerun()
-
-
+       st.error(f"Erro ao processar dados: {str(e)}")
+       if st.button("Recarregar página"):
+            st.session_state.clear()
+            st.rerun()
    finally:
        st.session_state["_is_running"] = False
 
