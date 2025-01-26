@@ -65,8 +65,11 @@ def load_and_process_data():
             
     except Exception as e:
         st.error(str(e))
-        st.experimental_rerun()
+        if st.button("Recarregar página"):
+            st.session_state.clear()
+            st.experimental_rerun()
         return pd.DataFrame()
+
     
 def calcular_total_importacao():
     try:
@@ -264,10 +267,12 @@ def main():
        display_filtered_details(df, data_inicial, data_final, filtros)
 
    except Exception as e:
-       st.error(f"Erro ao processar dados: {str(e)}")
-       if st.button("Recarregar página"):
+        st.error(f"Erro ao processar dados: {str(e)}")
+        st.warning("Por favor, clique no botão abaixo para recarregar a página e tentar novamente.")
+        if st.button("Recarregar página"):
             st.session_state.clear()
-            st.rerun()
+            st.experimental_rerun()
+
    finally:
        st.session_state["_is_running"] = False
 
