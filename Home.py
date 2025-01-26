@@ -31,21 +31,6 @@ except json.JSONDecodeError as e:
     st.error(f"Erro ao interpretar 'config.json': {e}")
     st.stop()
 
-def calcular_total_cabotagem():
-    df = carregar_planilha(
-        st.secrets["urls"]["planilha_cabotagem"], 
-        ['QUANTIDADE C20', 'QUANTIDADE C40']
-    )
-    if df.empty:
-        return 0
-
-    # Processar as colunas
-    df['QUANTIDADE C20'] = pd.to_numeric(df['QUANTIDADE C20'].str.replace(',', '.'), errors='coerce').fillna(0)
-    df['QUANTIDADE C40'] = pd.to_numeric(df['QUANTIDADE C40'].str.replace(',', '.'), errors='coerce').fillna(0)
-
-    return int(df['QUANTIDADE C20'].sum() + df['QUANTIDADE C40'].sum())
-
-    
 @st.cache_data(ttl=3600)
 def carregar_planilha(file_id, colunas_obrigatorias):
     """
@@ -70,6 +55,21 @@ def carregar_planilha(file_id, colunas_obrigatorias):
     except Exception as e:
         st.error(f"Erro ao carregar a planilha: {e}")
         return pd.DataFrame()
+
+def calcular_total_cabotagem():
+    df = carregar_planilha(
+        st.secrets["urls"]["planilha_cabotagem"], 
+        ['QUANTIDADE C20', 'QUANTIDADE C40']
+    )
+    if df.empty:
+        return 0
+
+    # Processar as colunas
+    df['QUANTIDADE C20'] = pd.to_numeric(df['QUANTIDADE C20'].str.replace(',', '.'), errors='coerce').fillna(0)
+    df['QUANTIDADE C40'] = pd.to_numeric(df['QUANTIDADE C40'].str.replace(',', '.'), errors='coerce').fillna(0)
+
+    return int(df['QUANTIDADE C20'].sum() + df['QUANTIDADE C40'].sum())
+
 
 
 def carregar_dados_exportacao():
