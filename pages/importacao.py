@@ -69,12 +69,11 @@ def load_and_process_data():
         st.error(f"Erro ao carregar dados: {str(e)}")
         return pd.DataFrame()
 
-def create_dropdown(label, df_column, key):
+def create_multiselect(label, df_column, key):
     if df_column is None:
-        return "Todos"
+        return ["Todos"]
     options = df_column.dropna().unique().tolist()
-    options = [str(opt) for opt in options]
-    return st.selectbox(label, ['Todos'] + sorted(options), key=key)
+    return st.multiselect(label, ['Todos'] + sorted(map(str, options)), default=["Todos"], key=key)
 
 def display_filtered_details(df, data_inicial, data_final, filtros):
     detalhes = df.copy()
@@ -84,9 +83,9 @@ def display_filtered_details(df, data_inicial, data_final, filtros):
         (detalhes['ETA'].dt.date <= data_final)
     ]
     
-    for coluna, valor in filtros.items():
-        if valor and valor != "Todos" and coluna in detalhes.columns:
-            detalhes = detalhes[detalhes[coluna] == valor]
+    for coluna, valores in filtros.items():
+        if valores and "Todos" not in valores and coluna in detalhes.columns:
+            detalhes = detalhes[detalhes[coluna].isin(valores)]
 
     if detalhes.empty:
         st.warning("Nenhum dado encontrado para os filtros selecionados.")
@@ -160,30 +159,30 @@ def main():
         # Filtros Primários
         col1, col2, col3 = st.columns(3)
         with col1:
-            uf_selecionada = create_dropdown("UF Consignatário", df['UF CONSIGNATÁRIO'], "uf")
+            ufs_selecionadas = create_multiselect("UF Consignatário", df['UF CONSIGNATÁRIO'], "uf")
         with col2:
-            porto_selecionado = create_dropdown("Porto de Descarga", df['PORTO DESCARGA'], "porto")
+            portos_selecionados = create_multiselect("Porto de Descarga", df['PORTO DESCARGA'], "porto")
         with col3:
-            armador_selecionado = create_dropdown("Armador", df['ARMADOR'], "armador")
+            armadores_selecionados = create_multiselect("Armador", df['ARMADOR'], "armador")
 
         # Filtros Secundários
         with st.expander("Filtros Adicionais"):
             col4, col5, col6 = st.columns(3)
             with col4:
-                consig_final = create_dropdown("Consignatário Final", df.get('CONSIGNATARIO FINAL'), "consig_final")
+                consignatarios_finais = create_multiselect("Consignatário Final", df.get('CONSIGNATARIO FINAL'), "consig_final")
             with col5:
-                consolidador = create_dropdown("Consolidador", df.get('CONSOLIDADOR'), "consolidador")
+                consolidadores = create_multiselect("Consolidador", df.get('CONSOLIDADOR'), "consolidador")
             with col6:
-                consignatario = create_dropdown("Consignatário", df.get('CONSIGNATÁRIO'), "consignatario")
+                consignatarios = create_multiselect("Consignatário", df.get('CONSIGNATÁRIO'), "consignatario")
 
         # Aplicar filtros
         filtros = {
-            'UF CONSIGNATÁRIO': uf_selecionada,
-            'PORTO DESCARGA': porto_selecionado,
-            'ARMADOR': armador_selecionado,
-            'CONSIGNATARIO FINAL': consig_final,
-            'CONSOLIDADOR': consolidador,
-            'CONSIGNATÁRIO': consignatario
+            'UF CONSIGNATÁRIO': ufs_selecionadas,
+            'PORTO DESCARGA': portos_selecionados,
+            'ARMADOR': armadores_selecionados,
+            'CONSIGNATARIO FINAL': consignatarios_finais,
+            'CONSOLIDADOR': consolidadores,
+            'CONSIGNATÁRIO': consignatarios
         }
 
         df_filtrado = df.copy()
@@ -192,9 +191,9 @@ def main():
             (df_filtrado['ETA'].dt.date <= data_final)
         ]
         
-        for coluna, valor in filtros.items():
-            if valor != "Todos" and coluna in df_filtrado.columns:
-                df_filtrado = df_filtrado[df_filtrado[coluna] == valor]
+        for coluna, valores in filtros.items():
+            if valores and "Todos" not in valores and coluna in df_filtrado.columns:
+                df_filtrado = df_filtrado[df_filtrado[coluna].isin(valores)]
 
         if not df_filtrado.empty:
             # Tabela pivot

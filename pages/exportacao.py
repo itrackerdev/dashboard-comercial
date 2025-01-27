@@ -96,9 +96,9 @@ def display_filtered_details(df, data_inicial, data_final, filtros):
         (detalhes['DATA EMBARQUE SIMPLIFICADA'] <= data_final)
     ]
     
-    for coluna, valor in filtros.items():
-        if valor and valor != "Todos" and coluna in detalhes.columns:
-            detalhes = detalhes[detalhes[coluna] == valor]
+    for coluna, valores in filtros.items():
+        if valores and "Todos" not in valores and coluna in detalhes.columns:
+            detalhes = detalhes[detalhes[coluna].isin(valores)]
 
     if detalhes.empty:
         st.warning("Nenhum dado encontrado para os filtros selecionados.")
@@ -126,14 +126,14 @@ def display_filtered_details(df, data_inicial, data_final, filtros):
 
     st.dataframe(detalhes_tabela, use_container_width=True, hide_index=True)
 
-def create_dropdown(label, df_column, key):
+def create_multiselect(label, df_column, key):
     """
-    Cria um dropdown para seleção de filtros.
+    Cria um multiselect para seleção de múltiplos filtros.
     """
     if df_column is None:
-        return "Todos"
+        return ["Todos"]
     options = df_column.dropna().unique().tolist()
-    return st.selectbox(label, ['Todos'] + sorted(map(str, options)), key=key)
+    return st.multiselect(label, ['Todos'] + sorted(map(str, options)), default=["Todos"], key=key)
 
 def main():
     st.markdown('<h1 class="main-title">📦 Previsão de Exportações de Containers</h1>', unsafe_allow_html=True)
@@ -186,41 +186,41 @@ def main():
         # Filtros Primários
         col1, col2, col3 = st.columns(3)
         with col1:
-            estado_selecionado = create_dropdown("Estado Exportador", df['ESTADO EXPORTADOR'], "estado")
+            estados_selecionados = create_multiselect("Estado Exportador", df['ESTADO EXPORTADOR'], "estado")
         with col2:
-            porto_selecionado = create_dropdown("Porto de Embarque", df['PORTO EMBARQUE'], "porto")
+            portos_selecionados = create_multiselect("Porto de Embarque", df['PORTO EMBARQUE'], "porto")
         with col3:
-            armador_selecionado = create_dropdown("Armador", df.get('ARMADOR'), "armador")
+            armadores_selecionados = create_multiselect("Armador", df.get('ARMADOR'), "armador")
 
         # Filtros Secundários
         with st.expander("Filtros Adicionais"):
             col4, col5, col6 = st.columns(3)
             with col4:
-                pais_procedencia = create_dropdown("País de Procedência", df.get('PAÍS DE PROCEDÊNCIA'), "pais_proc")
+                paises_procedencia = create_multiselect("País de Procedência", df.get('PAÍS DE PROCEDÊNCIA'), "pais_proc")
             with col5:
-                tipo_embarque = create_dropdown("Tipo de Embarque", df.get('TIPO EMBARQUE'), "tipo_emb")
+                tipos_embarque = create_multiselect("Tipo de Embarque", df.get('TIPO EMBARQUE'), "tipo_emb")
             with col6:
-                atividade_exportador = create_dropdown("Atividade Exportador", df.get('ATIVIDADE EXPORTADOR'), "atividade_exp")
+                atividades_exportador = create_multiselect("Atividade Exportador", df.get('ATIVIDADE EXPORTADOR'), "atividade_exp")
 
             col7, col8, col9 = st.columns(3)
             with col7:
-                trade_lane = create_dropdown("Trade Lane", df.get('TRADE LANE'), "trade_lane")
+                trade_lanes = create_multiselect("Trade Lane", df.get('TRADE LANE'), "trade_lane")
             with col8:
-                tipo_container = create_dropdown("Tipo de Contêiner", df.get('TIPO CONTEINER'), "tipo_cont")
+                tipos_container = create_multiselect("Tipo de Contêiner", df.get('TIPO CONTEINER'), "tipo_cont")
             with col9:
-                mercadoria = create_dropdown("Mercadoria", df.get('MERCADORIA'), "mercadoria")
+                mercadorias = create_multiselect("Mercadoria", df.get('MERCADORIA'), "mercadoria")
 
         # Aplicar filtros
         filtros = {
-            'ESTADO EXPORTADOR': estado_selecionado,
-            'PORTO EMBARQUE': porto_selecionado,
-            'ARMADOR': armador_selecionado,
-            'PAÍS DE PROCEDÊNCIA': pais_procedencia,
-            'TIPO EMBARQUE': tipo_embarque,
-            'ATIVIDADE EXPORTADOR': atividade_exportador,
-            'TRADE LANE': trade_lane,
-            'TIPO CONTEINER': tipo_container,
-            'MERCADORIA': mercadoria
+            'ESTADO EXPORTADOR': estados_selecionados,
+            'PORTO EMBARQUE': portos_selecionados,
+            'ARMADOR': armadores_selecionados,
+            'PAÍS DE PROCEDÊNCIA': paises_procedencia,
+            'TIPO EMBARQUE': tipos_embarque,
+            'ATIVIDADE EXPORTADOR': atividades_exportador,
+            'TRADE LANE': trade_lanes,
+            'TIPO CONTEINER': tipos_container,
+            'MERCADORIA': mercadorias
         }
 
         df_filtrado = df.copy()
@@ -229,9 +229,9 @@ def main():
             (df_filtrado['DATA EMBARQUE SIMPLIFICADA'] <= data_final)
         ]
         
-        for coluna, valor in filtros.items():
-            if valor != "Todos" and coluna in df_filtrado.columns:
-                df_filtrado = df_filtrado[df_filtrado[coluna] == valor]
+        for coluna, valores in filtros.items():
+            if valores and "Todos" not in valores and coluna in df_filtrado.columns:
+                df_filtrado = df_filtrado[df_filtrado[coluna].isin(valores)]
 
         if not df_filtrado.empty:
             # Tabela pivot
