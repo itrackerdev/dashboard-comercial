@@ -1,18 +1,22 @@
 import streamlit as st
-
-
-
-# Importações restantes e funções de estilo
 import pandas as pd
 from datetime import datetime
 import requests
 from io import BytesIO
 from style import apply_styles
 
-# Aplicação de estilos vem depois da configuração inicial
+# Configuração da página
+st.set_page_config(
+    page_title="Sistema de Análise de Cargas - Importação",
+    layout="wide",
+    initial_sidebar_state="expanded",
+    page_icon="📥"
+)
+
+# Aplicação de estilos
 apply_styles()
 
-# No início do arquivo, após os imports
+# Navegação na sidebar
 navigation = [
     {"icon": "🏠", "label": "Home", "page": "Home.py", "suffix": "home"},
     {"icon": "🚢", "label": "Cabotagem", "page": "pages/cabotagem.py", "suffix": "cab"},
@@ -20,21 +24,19 @@ navigation = [
     {"icon": "📥", "label": "Importação", "page": "pages/importacao.py", "suffix": "imp"}
 ]
 
-# Navegação na sidebar
 for nav in navigation:
     if st.sidebar.button(
         f"{nav['icon']} {nav['label']}", 
-        key=f"imp_nav_{nav['suffix']}", 
+        key=f"nav_{nav['suffix']}", 
         use_container_width=True
     ):
         st.switch_page(nav['page'])
-
 
 @st.cache_data(ttl=3600)
 def load_and_process_data():
     try:
         file_id = st.secrets["urls"]["planilha_importacao"]
-        url = f"https://drive.google.com/uc?id={file_id}"
+        url = f"https://docs.google.com/spreadsheets/d/{file_id}/export?format=xlsx"
         
         response = requests.get(url, timeout=10)
         response.raise_for_status()
@@ -64,28 +66,15 @@ def load_and_process_data():
         return df
             
     except Exception as e:
-        st.error(str(e))
-        st.experimental_rerun()
+        st.error(f"Erro ao carregar dados: {str(e)}")
         return pd.DataFrame()
-    
-def calcular_total_importacao():
-    try:
-        file_id = st.secrets["urls"]["planilha_importacao"]
-        url = f"https://drive.google.com/uc?id={file_id}"
-        
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-        excel_content = BytesIO(response.content)
-        
-        df = pd.read_excel(excel_content)
-        df['QTDE CONTAINER'] = pd.to_numeric(
-            df['QTDE CONTAINER'].str.replace(',', '.'), errors='coerce'
-        ).fillna(0)
-        
-        return int(df['QTDE CONTAINER'].sum())
-    except Exception as e:
-        st.error(f"Erro ao calcular total de importação: {e}")
-        return 0
+
+def create_dropdown(label, df_column, key):
+    if df_column is None:
+        return "Todos"
+    options = df_column.dropna().unique().tolist()
+    options = [str(opt) for opt in options]
+    return st.selectbox(label, ['Todos'] + sorted(options), key=key)
 
 def display_filtered_details(df, data_inicial, data_final, filtros):
     detalhes = df.copy()
@@ -120,156 +109,122 @@ def display_filtered_details(df, data_inicial, data_final, filtros):
 
     st.dataframe(detalhes_tabela, use_container_width=True, hide_index=True)
 
-def create_dropdown(label, df_column, key):
-    if df_column is None:
-        return "Todos"
-    options = df_column.dropna().unique().tolist()
-    options = [str(opt) for opt in options]
-    return st.selectbox(label, ['Todos'] + sorted(options), key=key)
-
 def main():
-   st.markdown('<h1 class="main-title">📢 Previsão de Importações de Containers</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 class="main-title">📢 Previsão de Importações de Containers</h1>', unsafe_allow_html=True)
 
-   if st.session_state.get("_is_running", False):
-       st.warning("Carregamento em andamento...")
-       st.stop()
+    if st.session_state.get("_is_running", False):
+        st.warning("Carregamento em andamento...")
+        st.stop()
 
-   st.session_state["_is_running"] = True
+    st.session_state["_is_running"] = True
 
-   if "dataframe" not in st.session_state or st.session_state["dataframe"].empty:
-       with st.spinner('Carregando dados...'):
-           df = load_and_process_data()
-           if not df.empty:
-               st.session_state["dataframe"] = df
-           else:
-               st.stop()
-   
-   df = st.session_state["dataframe"]
-   
-   try:
-       # Métricas principais
-       total_containers = int(df['QTDE CONTAINER'].sum()) if 'QTDE CONTAINER' in df.columns else 0
-       data_mais_antiga = df['ETA'].min().strftime('%d/%m/%Y')
-       data_mais_recente = df['ETA'].max().strftime('%d/%m/%Y')
-       range_datas = f"{data_mais_antiga} - {data_mais_recente}"
+    try:
+        df = load_and_process_data()
+        if df.empty:
+            st.error("Não foi possível carregar os dados.")
+            st.stop()
 
-       col1, col2 = st.columns(2)
-       with col1:
-           st.metric("TOTAL DE CONTAINERS", f"{total_containers:,}", help="Total de containers no período")
-       with col2:
-           st.metric("PERÍODO DOS DADOS", range_datas, help="Intervalo de datas dos dados disponíveis")
+        # Métricas principais
+        total_containers = int(df['QTDE CONTAINER'].sum())
+        data_mais_antiga = df['ETA'].min().strftime('%d/%m/%Y')
+        data_mais_recente = df['ETA'].max().strftime('%d/%m/%Y')
+        range_datas = f"{data_mais_antiga} - {data_mais_recente}"
 
-       # Filtros principais
-       st.markdown('<h3 class="subheader">Filtros</h3>', unsafe_allow_html=True)
-       
-       col1, col2 = st.columns(2)
-       with col1:
-           data_mais_antiga_dt = df['ETA'].min().date()
-           data_mais_recente_dt = df['ETA'].max().date()
-           data_inicial = st.date_input(
-               "Data Inicial",
-               min_value=data_mais_antiga_dt,
-               max_value=data_mais_recente_dt,
-               value=data_mais_antiga_dt,
-               key="data_inicial"
-           )
-       with col2:
-           data_final = st.date_input(
-               "Data Final",
-               min_value=data_mais_antiga_dt,
-               max_value=data_mais_recente_dt,
-               value=data_mais_recente_dt,
-               key="data_final"
-           )
+        col1, col2 = st.columns(2)
+        with col1:
+            st.metric("TOTAL DE CONTAINERS", f"{total_containers:,}")
+        with col2:
+            st.metric("PERÍODO DOS DADOS", range_datas)
 
-       # Verificar colunas requeridas
-       colunas_requeridas = ['UF CONSIGNATÁRIO', 'PORTO DESCARGA', 'ARMADOR']
-       missing_cols = [col for col in colunas_requeridas if col not in df.columns]
-       if missing_cols:
-           st.error(f"Colunas ausentes: {', '.join(missing_cols)}")
-           return
+        # Filtros principais
+        st.markdown('<h3 class="subheader">Filtros</h3>', unsafe_allow_html=True)
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            data_mais_antiga_dt = df['ETA'].min().date()
+            data_mais_recente_dt = df['ETA'].max().date()
+            data_inicial = st.date_input(
+                "Data Inicial",
+                min_value=data_mais_antiga_dt,
+                max_value=data_mais_recente_dt,
+                value=data_mais_antiga_dt
+            )
+        with col2:
+            data_final = st.date_input(
+                "Data Final",
+                min_value=data_mais_antiga_dt,
+                max_value=data_mais_recente_dt,
+                value=data_mais_recente_dt
+            )
 
-       # Filtros Primários
-       col1, col2, col3 = st.columns(3)
-       with col1:
-           uf_selecionada = create_dropdown("UF Consignatário", df.get('UF CONSIGNATÁRIO'), "uf")
-       with col2:
-           porto_selecionado = create_dropdown("Porto de Descarga", df.get('PORTO DESCARGA'), "porto")
-       with col3:
-           armador_selecionado = create_dropdown("Armador", df.get('ARMADOR'), "armador")
+        # Filtros Primários
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            uf_selecionada = create_dropdown("UF Consignatário", df['UF CONSIGNATÁRIO'], "uf")
+        with col2:
+            porto_selecionado = create_dropdown("Porto de Descarga", df['PORTO DESCARGA'], "porto")
+        with col3:
+            armador_selecionado = create_dropdown("Armador", df['ARMADOR'], "armador")
 
-       # Filtros Secundários
-       with st.expander("Filtros Adicionais", expanded=False):
-           col4, col5, col6 = st.columns(3)
-           with col4:
-               consig_final = create_dropdown("Consignatário Final", df.get('CONSIGNATARIO FINAL'), "consig_final")
-           with col5:
-               consolidador = create_dropdown("Consolidador", df.get('CONSOLIDADOR'), "consolidador")
-           with col6:
-               consignatario = create_dropdown("Consignatário", df.get('CONSIGNATÁRIO'), "consignatario")
+        # Filtros Secundários
+        with st.expander("Filtros Adicionais"):
+            col4, col5, col6 = st.columns(3)
+            with col4:
+                consig_final = create_dropdown("Consignatário Final", df.get('CONSIGNATARIO FINAL'), "consig_final")
+            with col5:
+                consolidador = create_dropdown("Consolidador", df.get('CONSOLIDADOR'), "consolidador")
+            with col6:
+                consignatario = create_dropdown("Consignatário", df.get('CONSIGNATÁRIO'), "consignatario")
 
-           col7, col8, col9 = st.columns(3)
-           with col7:
-               terminal = create_dropdown("Terminal Descarga", df.get('TERMINAL DESCARGA'), "terminal")
-           with col8:
-               exportador = create_dropdown("Nome Exportador", df.get('NOME EXPORTADOR'), "exportador")
-           with col9:
-               agente = create_dropdown("Agente Internacional", df.get('AGENTE INTERNACIONAL'), "agente")
+        # Aplicar filtros
+        filtros = {
+            'UF CONSIGNATÁRIO': uf_selecionada,
+            'PORTO DESCARGA': porto_selecionado,
+            'ARMADOR': armador_selecionado,
+            'CONSIGNATARIO FINAL': consig_final,
+            'CONSOLIDADOR': consolidador,
+            'CONSIGNATÁRIO': consignatario
+        }
 
-       # Aplicar filtros
-       df_filtrado = df.copy()
-       df_filtrado = df_filtrado[
-           (df_filtrado['ETA'].dt.date >= data_inicial) &
-           (df_filtrado['ETA'].dt.date <= data_final)
-       ]
-       
-       filtros = {
-           'UF CONSIGNATÁRIO': uf_selecionada,
-           'PORTO DESCARGA': porto_selecionado,
-           'ARMADOR': armador_selecionado,
-           'CONSIGNATARIO FINAL': consig_final,
-           'CONSOLIDADOR': consolidador,
-           'CONSIGNATÁRIO': consignatario,
-           'TERMINAL DESCARGA': terminal,
-           'NOME EXPORTADOR': exportador,
-           'AGENTE INTERNACIONAL': agente
-       }
-       
-       for coluna, valor in filtros.items():
-           if valor != "Todos" and coluna in df_filtrado.columns:
-               df_filtrado = df_filtrado[df_filtrado[coluna] == valor]
+        df_filtrado = df.copy()
+        df_filtrado = df_filtrado[
+            (df_filtrado['ETA'].dt.date >= data_inicial) &
+            (df_filtrado['ETA'].dt.date <= data_final)
+        ]
+        
+        for coluna, valor in filtros.items():
+            if valor != "Todos" and coluna in df_filtrado.columns:
+                df_filtrado = df_filtrado[df_filtrado[coluna] == valor]
 
-       if df_filtrado.empty:
-           st.warning("Nenhum dado encontrado para os filtros selecionados.")
-           return
+        if not df_filtrado.empty:
+            # Tabela pivot
+            dados_pivot = df_filtrado.groupby(['ETA', 'UF CONSIGNATÁRIO', 'PORTO DESCARGA'])['QTDE CONTAINER'].sum().reset_index()
+            tabela_pivot = dados_pivot.pivot_table(
+                index='ETA',
+                columns=['UF CONSIGNATÁRIO', 'PORTO DESCARGA'],
+                values='QTDE CONTAINER',
+                aggfunc='sum'
+            ).fillna(0)
 
-       # Tabela pivot
-       dados_pivot = df_filtrado.groupby(['ETA', 'UF CONSIGNATÁRIO', 'PORTO DESCARGA'])['QTDE CONTAINER'].sum().reset_index()
-       tabela_pivot = dados_pivot.pivot_table(
-           index='ETA',
-           columns=['UF CONSIGNATÁRIO', 'PORTO DESCARGA'],
-           values='QTDE CONTAINER',
-           aggfunc='sum'
-       ).fillna(0)
+            tabela_pivot = tabela_pivot.sort_index(ascending=False)
+            tabela_pivot['TOTAL'] = tabela_pivot.sum(axis=1)
 
-       tabela_pivot = tabela_pivot.sort_index(ascending=False)
-       tabela_pivot['TOTAL'] = tabela_pivot.sum(axis=1)
+            st.markdown('<h3 class="subheader">Previsão de Chegadas por Estado</h3>', unsafe_allow_html=True)
+            tabela_formatada = tabela_pivot.copy().reset_index()
+            tabela_formatada['ETA'] = tabela_formatada['ETA'].dt.strftime('%d/%m/%Y')
+            st.dataframe(tabela_formatada, use_container_width=True, hide_index=True)
 
-       st.markdown('<h3 class="subheader">Previsão de Chegadas por Estado</h3>', unsafe_allow_html=True)
-       tabela_formatada = tabela_pivot.copy().reset_index()
-       tabela_formatada['ETA'] = tabela_formatada['ETA'].dt.strftime('%d/%m/%Y')
-       st.dataframe(tabela_formatada, use_container_width=True, hide_index=True)
+            # Detalhes dos containers
+            display_filtered_details(df, data_inicial, data_final, filtros)
+        else:
+            st.warning("Nenhum dado encontrado para os filtros selecionados.")
 
-       # Detalhes dos containers
-       display_filtered_details(df, data_inicial, data_final, filtros)
-
-   except Exception as e:
-       st.error(f"Erro ao processar dados: {str(e)}")
-       if st.button("Recarregar página"):
-            st.session_state.clear()
+    except Exception as e:
+        st.error(f"Erro ao processar dados: {str(e)}")
+        if st.button("Recarregar página"):
             st.rerun()
-   finally:
-       st.session_state["_is_running"] = False
+    finally:
+        st.session_state["_is_running"] = False
 
 if __name__ == "__main__":
-   main()
+    main()
