@@ -192,13 +192,37 @@ def main():
         with col3:
             armador_selecionado = create_dropdown("Armador", df.get('ARMADOR'), "armador")
 
+        # Filtros Secundários
+        with st.expander("Filtros Adicionais"):
+            col4, col5, col6 = st.columns(3)
+            with col4:
+                pais_procedencia = create_dropdown("País de Procedência", df.get('PAÍS DE PROCEDÊNCIA'), "pais_proc")
+            with col5:
+                tipo_embarque = create_dropdown("Tipo de Embarque", df.get('TIPO EMBARQUE'), "tipo_emb")
+            with col6:
+                atividade_exportador = create_dropdown("Atividade Exportador", df.get('ATIVIDADE EXPORTADOR'), "atividade_exp")
+
+            col7, col8, col9 = st.columns(3)
+            with col7:
+                trade_lane = create_dropdown("Trade Lane", df.get('TRADE LANE'), "trade_lane")
+            with col8:
+                tipo_container = create_dropdown("Tipo de Contêiner", df.get('TIPO CONTEINER'), "tipo_cont")
+            with col9:
+                mercadoria = create_dropdown("Mercadoria", df.get('MERCADORIA'), "mercadoria")
+
+        # Aplicar filtros
         filtros = {
             'ESTADO EXPORTADOR': estado_selecionado,
             'PORTO EMBARQUE': porto_selecionado,
-            'ARMADOR': armador_selecionado
+            'ARMADOR': armador_selecionado,
+            'PAÍS DE PROCEDÊNCIA': pais_procedencia,
+            'TIPO EMBARQUE': tipo_embarque,
+            'ATIVIDADE EXPORTADOR': atividade_exportador,
+            'TRADE LANE': trade_lane,
+            'TIPO CONTEINER': tipo_container,
+            'MERCADORIA': mercadoria
         }
 
-        # Aplicar filtros
         df_filtrado = df.copy()
         df_filtrado = df_filtrado[
             (df_filtrado['DATA EMBARQUE SIMPLIFICADA'] >= data_inicial) &
