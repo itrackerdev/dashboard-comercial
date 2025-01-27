@@ -137,7 +137,7 @@ def main():
 
         # Filtros principais
         st.markdown('<h3 class="subheader">Filtros</h3>', unsafe_allow_html=True)
-        
+
         col1, col2 = st.columns(2)
         with col1:
             data_mais_antiga_dt = df['ETA'].min().date()
@@ -190,7 +190,7 @@ def main():
             (df_filtrado['ETA'].dt.date >= data_inicial) &
             (df_filtrado['ETA'].dt.date <= data_final)
         ]
-        
+
         for coluna, valores in filtros.items():
             if valores and "Todos" not in valores and coluna in df_filtrado.columns:
                 df_filtrado = df_filtrado[df_filtrado[coluna].isin(valores)]
@@ -205,13 +205,22 @@ def main():
                 aggfunc='sum'
             ).fillna(0)
 
-            tabela_pivot = tabela_pivot.sort_index(ascending=False)
-            tabela_pivot['TOTAL'] = tabela_pivot.sum(axis=1)
+            # Adicionar coluna "TOTAL"
+            tabela_pivot["TOTAL"] = tabela_pivot.sum(axis=1)
 
+            # Ajustar cabeçalhos para incluir "TOTAL"
+            tabela_pivot.index.name = "DATA"
+            tabela_pivot = tabela_pivot.reset_index()
+            tabela_pivot.columns = pd.MultiIndex.from_tuples(
+                [("UF CONSIGNATÁRIO", "PORTO DESCARGA")] + 
+                [(col[0], col[1]) for col in tabela_pivot.columns[1:-1]] + 
+                [("TOTAL", "TOTAL")],  # Cabeçalho estático para TOTAL
+                names=["", ""]
+            )
+
+            # Renderizar tabela no Streamlit
             st.markdown('<h3 class="subheader">Previsão de Chegadas por Estado</h3>', unsafe_allow_html=True)
-            tabela_formatada = tabela_pivot.copy().reset_index()
-            tabela_formatada['ETA'] = tabela_formatada['ETA'].dt.strftime('%d/%m/%Y')
-            st.dataframe(tabela_formatada, use_container_width=True, hide_index=True)
+            st.dataframe(tabela_pivot, use_container_width=True, hide_index=True)
 
             # Detalhes dos containers
             display_filtered_details(df, data_inicial, data_final, filtros)
@@ -224,6 +233,7 @@ def main():
             st.rerun()
     finally:
         st.session_state["_is_running"] = False
+
 
 if __name__ == "__main__":
     main()
