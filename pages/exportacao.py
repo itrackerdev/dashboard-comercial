@@ -164,7 +164,7 @@ def main():
 
         # Filtros principais
         st.markdown('<h3 class="subheader">Filtros</h3>', unsafe_allow_html=True)
-        
+
         col1, col2 = st.columns(2)
         with col1:
             data_mais_antiga_dt = df['DATA EMBARQUE'].min().date()
@@ -192,35 +192,11 @@ def main():
         with col3:
             armadores_selecionados = create_multiselect("Armador", df.get('ARMADOR'), "armador")
 
-        # Filtros Secundários
-        with st.expander("Filtros Adicionais"):
-            col4, col5, col6 = st.columns(3)
-            with col4:
-                paises_procedencia = create_multiselect("País de Procedência", df.get('PAÍS DE PROCEDÊNCIA'), "pais_proc")
-            with col5:
-                tipos_embarque = create_multiselect("Tipo de Embarque", df.get('TIPO EMBARQUE'), "tipo_emb")
-            with col6:
-                atividades_exportador = create_multiselect("Atividade Exportador", df.get('ATIVIDADE EXPORTADOR'), "atividade_exp")
-
-            col7, col8, col9 = st.columns(3)
-            with col7:
-                trade_lanes = create_multiselect("Trade Lane", df.get('TRADE LANE'), "trade_lane")
-            with col8:
-                tipos_container = create_multiselect("Tipo de Contêiner", df.get('TIPO CONTEINER'), "tipo_cont")
-            with col9:
-                mercadorias = create_multiselect("Mercadoria", df.get('MERCADORIA'), "mercadoria")
-
         # Aplicar filtros
         filtros = {
             'ESTADO EXPORTADOR': estados_selecionados,
             'PORTO EMBARQUE': portos_selecionados,
-            'ARMADOR': armadores_selecionados,
-            'PAÍS DE PROCEDÊNCIA': paises_procedencia,
-            'TIPO EMBARQUE': tipos_embarque,
-            'ATIVIDADE EXPORTADOR': atividades_exportador,
-            'TRADE LANE': trade_lanes,
-            'TIPO CONTEINER': tipos_container,
-            'MERCADORIA': mercadorias
+            'ARMADOR': armadores_selecionados
         }
 
         df_filtrado = df.copy()
@@ -228,7 +204,7 @@ def main():
             (df_filtrado['DATA EMBARQUE SIMPLIFICADA'] >= data_inicial) &
             (df_filtrado['DATA EMBARQUE SIMPLIFICADA'] <= data_final)
         ]
-        
+
         for coluna, valores in filtros.items():
             if valores and "Todos" not in valores and coluna in df_filtrado.columns:
                 df_filtrado = df_filtrado[df_filtrado[coluna].isin(valores)]
@@ -243,13 +219,25 @@ def main():
                 aggfunc='sum'
             ).fillna(0)
 
-            tabela_pivot = tabela_pivot.sort_index(ascending=False)
-            tabela_pivot['TOTAL'] = tabela_pivot.sum(axis=1)
+            # Adicionar coluna "TOTAL"
+            tabela_pivot["TOTAL"] = tabela_pivot.sum(axis=1)
 
+            # Ajustar cabeçalhos para incluir "ESTADO EXPORTADOR", "PORTO DE EMBARQUE" e "TOTAL"
+            tabela_pivot.index.name = "DATA"
+            tabela_pivot = tabela_pivot.reset_index()
+            tabela_pivot.columns = pd.MultiIndex.from_tuples(
+                [("ESTADO EXPORTADOR", "PORTO DE EMBARQUE")] + 
+                [(col[0], col[1]) for col in tabela_pivot.columns[1:-1]] + 
+                [("TOTAL", "TOTAL")],  # Cabeçalho estático para TOTAL
+                names=["", ""]
+            )
+
+            # Organizar as datas da última para a primeira
+            tabela_pivot = tabela_pivot.sort_values(by=("ESTADO EXPORTADOR", "PORTO DE EMBARQUE"), ascending=False)
+
+            # Renderizar tabela no Streamlit
             st.markdown('<h3 class="subheader">Previsão de Embarques por Estado e Porto</h3>', unsafe_allow_html=True)
-            tabela_formatada = tabela_pivot.copy().reset_index()
-            tabela_formatada['DATA EMBARQUE'] = tabela_formatada['DATA EMBARQUE'].dt.strftime('%d/%m/%Y')
-            st.dataframe(tabela_formatada, use_container_width=True, hide_index=True)
+            st.dataframe(tabela_pivot, use_container_width=True, hide_index=True)
 
             # Detalhes dos containers
             display_filtered_details(df, data_inicial, data_final, filtros)
@@ -262,6 +250,7 @@ def main():
             st.rerun()
     finally:
         st.session_state["_is_running"] = False
+
 
 if __name__ == "__main__":
     main()
