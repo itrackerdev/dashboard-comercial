@@ -303,6 +303,9 @@ def main():
            </div>
        """, unsafe_allow_html=True)
 
+
+       st.divider()
+
    df_exp = carregar_dados_exportacao()
    df_imp = carregar_dados_importacao()
    df_cab = carregar_dados_cabotagem()
@@ -316,7 +319,6 @@ def main():
                <div class="metric-icon">📦</div>
                <h3 class="metric-title">EXPORTAÇÕES</h3>
                <p class="metric-value">{calcular_total_exportacao(df_exp)}</p>
-               <a href="#" class="metric-button">Visualizar Exportações</a>
            </div>
            """,
            unsafe_allow_html=True
@@ -331,7 +333,6 @@ def main():
                <div class="metric-icon">📥</div>
                <h3 class="metric-title">IMPORTAÇÕES</h3>
                <p class="metric-value">{calcular_total_importacao(df_imp)}</p>
-               <a href="#" class="metric-button">Visualizar Importações</a>
            </div>
            """,
            unsafe_allow_html=True
@@ -346,7 +347,6 @@ def main():
                <div class="metric-icon">🚢</div>
                <h3 class="metric-title">CABOTAGEM</h3>
                <p class="metric-value">{calcular_total_cabotagem(df_cab)}</p>
-               <a href="#" class="metric-button">Visualizar Cabotagem</a>
            </div>
            """,
            unsafe_allow_html=True
